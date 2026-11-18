@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WebRoyale</title>
+<style>
+  :root { --bg:#0b0f17; --fg:#cfd6e4; --muted:#7a8599; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--fg); font:14px system-ui,sans-serif; }
+  body { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+  canvas { height:min(96vh,1280px); max-width:100vw; aspect-ratio:9/16; background:#000; display:block; }
+  body.dev canvas { height:min(86vh,1280px); }
+  #status, #log { display:none; } body.dev #status, body.dev #log { display:block; }
+  #fs { position:fixed; top:12px; right:12px; z-index:8; width:40px; height:40px; border:0; border-radius:10px;
+    background:rgba(29,36,51,.85); color:#fff; cursor:pointer; display:grid; place-items:center; }
+  #fs:hover { background:rgba(59,130,246,.9); }
+  :fullscreen #fs { opacity:.35; } :fullscreen #fs:hover { opacity:1; }
+  :fullscreen canvas { height:100vh; }
+  #toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:9; min-width:220px; max-width:calc(100vw - 32px);
+    background:rgba(17,22,33,.92); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.4);
+    font:13px system-ui,sans-serif; color:var(--fg); transition:opacity .4s, transform .4s; }
+  #toast.done { opacity:0; transform:translateX(-50%) translateY(12px); pointer-events:none; }
+  #toast .bar { height:4px; margin-top:8px; border-radius:2px; background:rgba(255,255,255,.1); overflow:hidden; }
+  #toast .bar i { display:block; height:100%; width:0; background:#3b82f6; transition:width .2s; }
+  #toast.indet .bar i { width:30%; animation:slide 1.1s ease-in-out infinite; }
+  @keyframes slide { from { margin-left:-30%; } to { margin-left:100%; } }
+  #status { color:var(--muted); min-height:1.2em; }
+  #log { width:min(92vw,720px); max-height:18vh; overflow:auto; font:11px ui-monospace,monospace; color:var(--muted); white-space:pre-wrap; }
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<button id="fs" title="Fullscreen" aria-label="Fullscreen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+<canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<div id="status">Loading…</div>
+<div id="toast" class="indet"><span id="toastText">Loading…</span><div class="bar"><i id="toastBar"></i></div></div>
+<div id="log"></div>
+<script>
+  // The log/status console only shows with ?dev in the URL.
+  const DEV = new URLSearchParams(location.search).has('dev');
+  if (DEV) document.body.classList.add('dev');
+  const fsToggle = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); };
+  document.getElementById('fs').onclick = fsToggle;
+  const logEl = document.getElementById('log'), statusEl = document.getElementById('status');
+  const log = (t) => { if (!DEV) return; logEl.textContent += t + '\n'; logEl.scrollTop = logEl.scrollHeight; };
+  // ---- SillyOS accounts ----------------------------------------------------------------------
+  // API base: '' when this page is served by the Worker itself, or the Worker's address when the page is
+  // hosted elsewhere (GitHub Pages: set in config.js; ?api= overrides for testing).
+  const API = (new URLSearchParams(location.search).get('api') || window.WR_API || '').replace(/\/$/, '');
+  const bridgeHttp = () => (Module.bridgeUrl || (location.protocol === 'https:' ? 'wss://' + location.host + '/bridge' : 'ws://127.0.0.1:8643')).replace(/^ws/, 'http');
+  const sillyToken = () => { try { return localStorage.getItem('webroyale_sillyos_token') || localStorage.getItem('nOS_chatToken') || ''; } catch (e) { return ''; } };
+  // Returns {ticket, user, account} from a SillyOS bridge, null for a plain bridge (guest play), and
+  // throws when SillyOS is required but nobody is signed in.
+  async function getAccount() {
+    let r; try { r = await fetch(bridgeHttp() + '/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: sillyToken() }) }); } catch (e) { return null; }
+    if (r.status === 401) throw new Error('signin');
+    return r.ok ? r.json() : null;
+  }
+  function showSignIn(msg) {
+    // Small SillyOS sign-in box. The password goes to the bridge over HTTPS, which signs in to SillyOS
+    // server-side and returns only a session token; the token (never the password) is kept in this browser.
+    document.getElementById('toast').classList.add('done');
+    let box = document.getElementById('signin');
+    if (!box) {
+      box = document.createElement('form'); box.id = 'signin';
+      box.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;width:min(320px,calc(100vw - 32px));background:#151b27;border:1px solid #263047;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);font:14px system-ui,sans-serif;color:#cfd6e4';
+      box.innerHTML = '<b style="font-size:16px">Sign in with SillyOS</b><input name="u" placeholder="Username" autocomplete="username" style="padding:9px;border-radius:8px;border:1px solid #263047;background:#0f1420;color:inherit">' +
+        '<input name="p" type="password" placeholder="Password" autocomplete="current-password" style="padding:9px;border-radius:8px;border:1px solid #263047;background:#0f1420;color:inherit">' +
+        '<button style="padding:10px;border:0;border-radius:8px;background:#3b82f6;color:#fff;font-weight:600;cursor:pointer">Sign in</button><div id="signin-msg" style="color:#f87171;min-height:1.2em"></div>';
+      box.onsubmit = async (e) => {
+        e.preventDefault(); const m = document.getElementById('signin-msg'); m.textContent = 'Signing in…';
+        try {
+          const r = await fetch(bridgeHttp() + '/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: box.u.value, password: box.p.value }) });
+          const j = await r.json(); if (!r.ok) { m.textContent = j.error || 'Sign in failed'; return; }
+          try { localStorage.setItem('webroyale_sillyos_token', j.token); } catch (err) {}
+          location.reload();
+        } catch (err) { m.textContent = 'Could not reach the server'; }
+      };
+      document.body.appendChild(box);
+    }
+    if (msg) document.getElementById('signin-msg').textContent = msg;
+  }
+  async function seedAccount() {
+    let j; try { j = await getAccount(); } catch (e) { showSignIn(); return false; }
+    if (!j) return true;
+    const keys = ['High_PROD', 'Low_PROD', 'Pass_PROD'];
+    let lines = []; try { lines = FS.readFile('/fs/prefs.txt', { encoding: 'utf8' }).split('\n').filter((l) => l); } catch (e) {}
+    let last = ''; try { last = localStorage.getItem('webroyale_silly_user') || ''; } catch (e) {}
+    const isKey = (l) => keys.includes(l.split('\t')[0]);
+    if (j.account && j.account.pass) {
+      lines = lines.filter((l) => !isKey(l));
+      lines.push('High_PROD\t' + j.account.high, 'Low_PROD\t' + j.account.low, 'Pass_PROD\t' + j.account.pass);
+    } else if (last && last !== j.user) lines = lines.filter((l) => !isKey(l));   // another SillyOS user used this browser: start fresh
+    FS.writeFile('/fs/prefs.txt', lines.join('\n') + '\n');
+    try { localStorage.setItem('webroyale_silly_user', j.user); } catch (e) {}
+    return true;
+  }
+  var Module = {
+    bridgeUrl: API ? API.replace(/^http/, 'ws') + '/bridge' : undefined,
+    locateFile: (n) => (window.__blobs && window.__blobs[n]) || n,
+    fetchTicket: async () => { const j = await getAccount(); return j ? j.ticket : ''; },
+    canvas: document.getElementById('canvas'),
+    print: log, printErr: log,
+    setStatus: (t) => {
+      statusEl.textContent = t || 'Running';
+      const toast = document.getElementById('toast'), m = /\((\d+(?:\.\d+)?)\/(\d+)\)/.exec(t || '');
+      if (!t) { document.getElementById('toastText').textContent = 'Starting…'; toast.classList.add('indet'); setTimeout(() => toast.classList.add('done'), 2500); return; }
+      if (m) { const pct = Math.min(100, 100 * m[1] / m[2]); toast.classList.remove('indet'); document.getElementById('toastBar').style.width = pct + '%';
+        document.getElementById('toastText').textContent = 'Loading game… ' + Math.floor(pct) + '%'; }
+      else document.getElementById('toastText').textContent = t.replace(/\.\.\.$/, '…');
+    },
+    onAbort: (w) => { statusEl.textContent = 'Stopped: ' + w; },
+    // Persistence: the game's writable files (prefs.txt with the account id/token, settings, caches)
+    // live under /fs. Back it with IndexedDB: load before main() runs, then flush every few seconds
+    // and whenever the tab is hidden or closed.
+    preRun: [() => {
+      // Game assets, unpacked from the downloaded pack into /assets (see loadDist below).
+      const buf = window.__assets; if (!buf) return;
+      const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength), dec = new TextDecoder(), made = new Set();
+      for (let o = 0; o < buf.length;) {
+        const pl = dv.getUint32(o); o += 4; const path = dec.decode(buf.subarray(o, o + pl)); o += pl;
+        const dl = dv.getUint32(o); o += 4; const full = '/assets/' + path, dir = full.slice(0, full.lastIndexOf('/'));
+        if (!made.has(dir)) { FS.mkdirTree(dir); made.add(dir); }
+        FS.writeFile(full, buf.subarray(o, o + dl)); o += dl;
+      }
+      window.__assets = null;
+    }, () => {
+      FS.mkdir('/fs'); FS.mount(IDBFS, {}, '/fs');
+      addRunDependency('idbfs');
+      FS.syncfs(true, (err) => {
+        if (err) console.warn('IDBFS load failed', err);
+        // SillyOS login: if the bridge runs in --sillyos mode, link this browser's game account to the
+        // signed-in SillyOS user before the game boots. Any other bridge just means guest play.
+        seedAccount().then((ok) => { if (ok) removeRunDependency('idbfs'); });
+      });
+      let syncing = false;
+      const save = () => { if (syncing) return; syncing = true; FS.syncfs(false, (err) => { syncing = false; if (err) console.warn('IDBFS save failed', err); }); };
+      setInterval(save, 3000);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+      window.addEventListener('pagehide', save);
+    }],
+  };
+</script>
+<div id="cursor"></div>
+<style>
+  #cursor { position:fixed; left:0; top:0; width:22px; height:22px; margin:-3px 0 0 -3px; pointer-events:none; z-index:5; display:none;
+    background:no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath d='M3 2l14 9-6 1 4 8-3 1-4-8-5 4z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  #cursor.down { transform:scale(.85); }
+  canvas { cursor:pointer; }
+</style>
+<script>
+  // Pointer lock: click the canvas to capture the mouse; a software cursor moves at display rate and
+  // the left button acts as a finger (touch id 0) at the cursor, in the game's 720x1280 pixel space.
+  // Without pointer lock (or on touch screens) pointer events map directly. Esc releases the lock.
+  (function () {
+    const cv = document.getElementById('canvas'), cur = document.getElementById('cursor');
+    const live = new Map(); let cx = 360, cy = 640, locked = false, down = false;
+    const push = () => {
+      if (!Module._web_set_touch) return;
+      let i = 0;
+      for (const [id, p] of live) { if (i >= 10) break; Module._web_set_touch(i++, p.x, p.y, id); }
+      Module._web_touch_count(i);
+    };
+    const release = (id) => {   // keep a lifted finger for a few frames so quick taps register
+      const p = live.get(id); if (!p) return; p.up = true;
+      // Taps are held >=120ms so the game sees them; swipes let go after ~2 frames so the fling keeps
+      // its speed (holding the finger still at the end would zero the scroll velocity).
+      const held = performance.now() - (p.t || 0), moved = p.sx !== undefined && Math.hypot(p.x - p.sx, p.y - p.sy) > 16;
+      setTimeout(() => { if (live.get(id) === p) { live.delete(id); push(); } }, moved ? 34 : Math.max(0, 120 - held));
+    };
+    const at = (e) => { const r = cv.getBoundingClientRect(); return { x: Math.round((e.clientX - r.left) * 720 / r.width), y: Math.round((e.clientY - r.top) * 1280 / r.height) }; };
+    cv.style.touchAction = 'none';
+
+    document.addEventListener('pointerlockchange', () => {
+      locked = document.pointerLockElement === cv; cur.style.display = locked ? 'block' : 'none';
+      if (!locked && down) { down = false; release(0); }
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!locked) return;
+      cx = Math.min(719, Math.max(0, cx + e.movementX * 720 / cv.getBoundingClientRect().width));
+      cy = Math.min(1279, Math.max(0, cy + e.movementY * 1280 / cv.getBoundingClientRect().height));
+      if (down) { const o = live.get(0) || {}; live.set(0, { x: Math.round(cx), y: Math.round(cy), t: o.t || performance.now(), sx: o.sx, sy: o.sy }); push(); }
+    });
+    const drawCursor = () => {
+      if (locked) { const r = cv.getBoundingClientRect(); cur.style.transform = `translate(${r.left + cx * r.width / 720}px, ${r.top + cy * r.height / 1280}px)`; }
+      requestAnimationFrame(drawCursor);
+    };
+    requestAnimationFrame(drawCursor);
+
+    cv.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && locked) {
+        if (e.button !== 0) return;
+        down = true; cur.classList.add('down'); live.set(0, { x: Math.round(cx), y: Math.round(cy), sx: Math.round(cx), sy: Math.round(cy), t: performance.now() }); push(); return;
+      }
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      cv.setPointerCapture(e.pointerId); { const a = at(e); live.set(e.pointerId + 1, Object.assign(a, { sx: a.x, sy: a.y, t: performance.now() })); } push(); e.preventDefault();
+    });
+    // Pointer lock is opt-in: press L (or double-click the canvas) to capture the mouse, Esc to release.
+    cv.addEventListener('dblclick', () => { if (!locked) try { const p = cv.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} });
+    document.addEventListener('keydown', (e) => { if ((e.key === 'l' || e.key === 'L') && !locked && document.getElementById('ui').hidden && !window.__kbActive) try { const p = cv.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} });
+    document.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'mouse' && locked) { if (down && e.button === 0) { down = false; cur.classList.remove('down'); release(0); } return; }
+      release(e.pointerId + 1);
+    });
+    // Scroll wheel / trackpad -> a one-finger drag (touch id 99) starting at the cursor. Vertical
+    // wheel drags vertically; horizontal swipes or Shift+wheel drag sideways (tab switching).
+    const WHEEL = 99; let wheelTimer = 0, regrab = 0;
+    // Each wheel notch drags a simulated finger. The finger drifts further from where it started with every
+    // notch, so before it runs out of room (and the scroll "freezes" until the 150 ms idle release) it is
+    // lifted and put back down at the cursor, which the game sees as a fresh flick that keeps its momentum.
+    const lift = () => { live.delete(WHEEL); push(); };
+    cv.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (regrab) return;                       // finger is mid-regrab; this notch folds into the next one
+      let p = live.get(WHEEL);
+      const idle = () => { clearTimeout(wheelTimer); wheelTimer = setTimeout(lift, 150); };
+      if (!p) {
+        const start = locked ? { x: Math.round(cx), y: Math.round(cy) } : at(e);
+        p = { x: start.x, y: start.y, sx: start.x, sy: start.y, t: performance.now() }; live.set(WHEEL, p); push(); idle();
+        return;   // the first event only puts the finger down, so the game sees a press before the drag
+      }
+      const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 800 : 1;
+      let dx = e.deltaX * unit, dy = e.deltaY * unit;
+      if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+      const nx = Math.min(719, Math.max(0, p.x - dx)), ny = Math.min(1279, Math.max(0, p.y - dy));
+      if (Math.hypot(nx - p.sx, ny - p.sy) > 300) {   // drifted too far: lift, then re-grab at the cursor
+        clearTimeout(wheelTimer); lift(); regrab = 1;
+        setTimeout(() => { regrab = 0; }, 60);
+        return;
+      }
+      live.set(WHEEL, { x: Math.round(nx), y: Math.round(ny), sx: p.sx, sy: p.sy, t: p.t }); push(); idle();
+    }, { passive: false });
+    cv.addEventListener('pointermove', (e) => { if (!locked && live.has(e.pointerId + 1) && !live.get(e.pointerId + 1).up) { const o = live.get(e.pointerId + 1); live.set(e.pointerId + 1, Object.assign(at(e), { t: o.t, sx: o.sx, sy: o.sy })); push(); } });
+  })();
+</script>
+<div id="kbbar" hidden><input id="kbbar-input" placeholder="Message" autocomplete="off"><button id="kbbar-send">Send</button></div>
+<div id="ui" hidden><div id="ui-box"><div id="ui-title"></div><div id="ui-msg"></div>
+  <input id="ui-input" autocomplete="off"><div id="ui-buttons"></div></div></div>
+<style>
+  #ui { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:10; }
+  #ui[hidden] { display:none; }
+  #kbbar { position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(420px,94vw); display:flex; gap:8px; z-index:9;
+    background:#1d2433; padding:8px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.5); }
+  #kbbar[hidden] { display:none; }
+  #kbbar-input { flex:1; padding:10px; font-size:16px; border-radius:8px; border:0; }
+  #kbbar-send { padding:10px 16px; font-size:15px; border-radius:8px; border:0; background:#3b82f6; color:#fff; cursor:pointer; }
+  #ui-box { background:#1d2433; color:#fff; padding:20px; border-radius:12px; width:min(360px,90vw); font:15px system-ui,sans-serif; }
+  #ui-title { font-weight:700; margin-bottom:8px; } #ui-msg { margin-bottom:12px; white-space:pre-wrap; }
+  #ui-input { width:100%; box-sizing:border-box; padding:8px; font-size:16px; margin-bottom:12px; }
+  #ui-buttons { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+  #ui-buttons button { padding:8px 14px; font-size:15px; border-radius:8px; border:0; cursor:pointer; }
+</style>
+<script>
+  // Non-blocking stand-ins for the Android keyboard and native dialogs; the game polls the results.
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    const open = (title, msg, withInput, buttons) => {
+      $('ui-title').textContent = title; $('ui-msg').textContent = msg;
+      $('ui-input').hidden = !withInput; $('ui-buttons').replaceChildren();
+      for (const [label, fn] of buttons) {
+        const b = document.createElement('button'); b.textContent = label;
+        b.onclick = () => { $('ui').hidden = true; fn(); }; $('ui-buttons').append(b);
+      }
+      $('ui').hidden = false; if (withInput) setTimeout(() => $('ui-input').focus(), 0);
+    };
+    // Keyboard. In-game fields (name entry) take typed keys directly. "Native" fields (clan chat),
+    // which Android draws as its own text box, get an HTML input bar under the canvas instead.
+    let kbOn = false, kbText = '', kbMax = 64;
+    const bar = $('kbbar'), barIn = $('kbbar-input');
+    Module.uiKeyboard = (text, max, native) => {
+      kbMax = max > 0 ? max : 64;
+      if (native) {
+        kbOn = window.__kbActive = false;
+        barIn.value = text || ''; barIn.maxLength = kbMax; bar.hidden = false;
+        if (document.pointerLockElement) document.exitPointerLock();
+        setTimeout(() => barIn.focus(), 0);
+        return;
+      }
+      kbOn = window.__kbActive = true; kbText = text || '';
+    };
+    Module.uiKeyboardHide = () => { kbOn = window.__kbActive = false; bar.hidden = true; barIn.blur(); };
+    const barSend = () => { Module.__kbResult = barIn.value; Module.__kbOk = 1; bar.hidden = true; barIn.blur(); };
+    barIn.addEventListener('input', () => { Module.__kbResult = barIn.value; });
+    barIn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); barSend(); }
+      else if (e.key === 'Escape') { bar.hidden = true; barIn.blur(); Module.__kbResult = null; }
+      e.stopPropagation();
+    });
+    $('kbbar-send').onclick = barSend;
+    document.addEventListener('keydown', (e) => {
+      if (!kbOn || !$('ui').hidden) return;
+      if (e.key === 'Enter') { kbOn = window.__kbActive = false; Module.__kbResult = kbText; Module.__kbOk = 1; }
+      else if (e.key === 'Escape') { kbOn = window.__kbActive = false; Module.__kbResult = null; return; }
+      else if (e.key === 'Backspace') kbText = kbText.slice(0, -1);
+      else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { if (kbText.length < kbMax) kbText += e.key; }
+      else return;
+      if (e.key !== 'Enter') Module.__kbResult = kbText;
+      e.preventDefault();
+    });
+    // News Royale: the game's WebView becomes an iframe over the canvas. Its own (dead) inbox site is
+    // swapped for /news, which serve.py fills from the posts written in /news/admin.
+    Module.uiWebView = (url, x, y, w, h) => {
+      let f = document.getElementById('wv');
+      if (!f) { f = document.createElement('iframe'); f.id = 'wv'; f.style.cssText = 'position:fixed;border:0;z-index:4;display:none;background:transparent'; document.body.appendChild(f); }
+      if (/inbox\.|news/i.test(url)) url = API + '/news'; else if (!/^about:/.test(url)) url = 'about:blank';
+      if (f.dataset.url !== url) { f.dataset.url = url; f.src = url; }
+      const cv = Module.canvas, r = cv.getBoundingClientRect(), sx = r.width / cv.width, sy = r.height / cv.height;
+      if (w <= 0 || h <= 0) { f.style.display = 'none'; return; }
+      Object.assign(f.style, { display:'block', left: (r.left + x * sx) + 'px', top: (r.top + y * sy) + 'px', width: (w * sx) + 'px', height: (h * sy) + 'px' });
+    };
+    Module.uiDialog = (id, title, msg, b0, b1, b2) => {
+      const btns = [[b0 || 'OK', () => { Module.__dlgResult = { id, button: 0 }; }]];
+      if (b1) btns.push([b1, () => { Module.__dlgResult = { id, button: 1 }; }]);
+      if (b2) btns.push([b2, () => { Module.__dlgResult = { id, button: 2 }; }]);
+      open(title, msg, false, btns);
+    };
+  })();
+</script>
+<script>
+  // IMA ADPCM WAV decoder (WAVE_FORMAT_IMA_ADPCM = 0x11). About half the game's sound effects use it
+  // and browsers' decodeAudioData doesn't support it. Returns an AudioBuffer, or null if not IMA.
+  Module.decodeImaWav = function (ctx, bytes) {
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const tag = (o) => String.fromCharCode(bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]);
+    if (bytes.length < 12 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') return null;
+    let fmt = null, data = null, frames = 0;
+    for (let o = 12; o + 8 <= bytes.length; ) {
+      const id = tag(o), len = dv.getUint32(o + 4, true), body = o + 8;
+      if (id === 'fmt ') fmt = { format: dv.getUint16(body, true), ch: dv.getUint16(body + 2, true), rate: dv.getUint32(body + 4, true),
+                                 align: dv.getUint16(body + 12, true), spb: len >= 20 ? dv.getUint16(body + 18, true) : 0 };
+      else if (id === 'fact') frames = dv.getUint32(body, true);
+      else if (id === 'data') data = { off: body, len: Math.min(len, bytes.length - body) };
+      o = body + len + (len & 1);
+    }
+    if (!fmt || !data || fmt.format !== 0x11) return null;
+    const STEP = [7,8,9,10,11,12,13,14,16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,
+      337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552,1707,1878,2066,2272,2499,2749,3024,3327,3660,4026,4428,4871,5358,
+      5894,6484,7132,7845,8630,9493,10442,11487,12635,13899,15289,16818,18500,20350,22385,24623,27086,29794,32767];
+    const IDX = [-1,-1,-1,-1,2,4,6,8,-1,-1,-1,-1,2,4,6,8];
+    const ch = fmt.ch, align = fmt.align, spb = fmt.spb || ((align - 4 * ch) * 8 / (4 * ch) + 1);
+    const blocks = Math.ceil(data.len / align);
+    const total = frames || blocks * spb;
+    const buf = ctx.createBuffer(ch, total, fmt.rate);
+    const out = []; for (let c = 0; c < ch; c++) out.push(buf.getChannelData(c));
+    let n = 0;
+    for (let b = 0; b < blocks && n < total; b++) {
+      const base = data.off + b * align, end = Math.min(base + align, data.off + data.len);
+      if (base + 4 * ch > end) break;
+      const pred = [], idx = [];
+      for (let c = 0; c < ch; c++) { pred[c] = dv.getInt16(base + 4 * c, true); idx[c] = Math.min(88, bytes[base + 4 * c + 2]); out[c][n] = pred[c] / 32768; }
+      let pos = base + 4 * ch, written = 1;
+      while (pos + 4 * ch <= end && written < spb) {
+        for (let c = 0; c < ch; c++) {
+          for (let k = 0; k < 8; k++) {
+            const byte = bytes[pos + 4 * c + (k >> 1)], nib = (k & 1) ? byte >> 4 : byte & 15;
+            const step = STEP[idx[c]];
+            let diff = step >> 3; if (nib & 1) diff += step >> 2; if (nib & 2) diff += step >> 1; if (nib & 4) diff += step;
+            pred[c] = Math.max(-32768, Math.min(32767, pred[c] + ((nib & 8) ? -diff : diff)));
+            idx[c] = Math.max(0, Math.min(88, idx[c] + IDX[nib]));
+            const at = n + written + k; if (at < total && written + k < spb) out[c][at] = pred[c] / 32768;
+          }
+        }
+        pos += 4 * ch; written += 8;
+      }
+      n += Math.min(spb, written);
+    }
+    return buf;
+  };
+</script>
+<script>
+  // Browsers start audio suspended until a user gesture; resume the game's AudioContext on input.
+  ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => {
+    const c = Module.__actx; if (c && c.state === 'suspended') c.resume();
+  }, { capture: true }));
+</script>
+<script>
+  // ---- Game files from git, cached ------------------------------------------------------------
+  // dist/manifest.json (built by tools/pack_dist.py) lists the wasm, data, glue and asset parts with
+  // their sha256. They are fetched through the server's /_git/ route (which reads them from the git
+  // repo), verified, and kept in Cache Storage under name+hash, so a file is only downloaded again when
+  // its hash changes. Without Cache Storage (private window) it simply downloads each visit.
+  (async function loadDist() {
+    const toast = document.getElementById('toast'), text = document.getElementById('toastText'), bar = document.getElementById('toastBar');
+    const base = new URLSearchParams(location.search).get('dist') || API + '/_git/dist/';
+    const say = (t, pct) => { text.textContent = t; if (pct == null) toast.classList.add('indet'); else { toast.classList.remove('indet'); bar.style.width = pct + '%'; } };
+    const gunzip = (ab) => new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+    const hex = async (ab) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ab)), (b) => b.toString(16).padStart(2, '0')).join('');
+    // GitHub Pages can't send the cross-origin isolation headers the game's threads need, so coi-sw.js adds
+    // them (the page reloads once after it installs). Pages served by the Worker are already isolated.
+    if (!window.crossOriginIsolated) {
+      say('Preparing…');
+      if ('serviceWorker' in navigator && window.isSecureContext) {
+        try { await navigator.serviceWorker.register('coi-sw.js'); await navigator.serviceWorker.ready;
+          if (!sessionStorage.getItem('coiReload')) { sessionStorage.setItem('coiReload', '1'); location.reload(); return; } } catch (e) { console.warn(e); }
+      }
+      say('This browser could not enable the features the game needs (try Chrome, Edge or Firefox, and allow site data).'); toast.classList.remove('indet'); return;
+    }
+    try { sessionStorage.removeItem('coiReload'); } catch (e) {}
+    try {
+      say('Checking for updates…');
+      const mr = await fetch(base + 'manifest.json', { cache: 'no-store' }); if (!mr.ok) throw new Error('manifest ' + mr.status);
+      const man = await mr.json();
+      let cache = null; try { cache = await caches.open('webroyale-dist'); } catch (e) {}
+      const url = (f) => base + f.name + '?h=' + f.sha256.slice(0, 16);
+      const have = new Set(); const data = new Map();
+      if (cache) { for (const f of man.files) if (await cache.match(url(f))) have.add(f.name);
+        for (const req of await cache.keys()) if (!man.files.some((f) => new URL(url(f), location.href).href === req.url)) await cache.delete(req); }   // drop old versions
+      const todo = man.files.filter((f) => !have.has(f.name)), total = todo.reduce((a, f) => a + f.size, 0); let got = 0;
+      if (todo.length) say('Downloading game files… 0% (' + (total / 1048576).toFixed(0) + ' MB, first visit only)', 0);
+      let doneFiles = 0;
+      const progress = () => say('Downloading game files… ' + Math.floor(100 * got / total) + '% (' + doneFiles + '/' + todo.length + ' files, ' + (total / 1048576).toFixed(0) + ' MB, first visit only)', 100 * got / total);
+      const fetchOnce = async (f) => {
+        // A transfer that makes no progress for 20 s is aborted so it can be retried.
+        const ac = new AbortController(); let timer = setTimeout(() => ac.abort(), 20000), mine = 0;
+        try {
+          const r = await fetch(url(f), { signal: ac.signal, cache: 'reload' });   // our own Cache Storage is the cache; skip the HTTP cache if (!r.ok) throw new Error(f.name + ' ' + r.status);
+          const parts = []; const rd = r.body.getReader();
+          for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); mine += value.length; got += value.length; clearTimeout(timer); timer = setTimeout(() => ac.abort(), 20000); progress(); }
+          return await new Blob(parts).arrayBuffer();
+        } catch (e) { got -= mine; throw e; } finally { clearTimeout(timer); }
+      };
+      const fetchOne = async (f) => {
+        let ab, err;
+        for (let attempt = 0; attempt < 4 && !ab; attempt++) { try { ab = await fetchOnce(f); } catch (e) { err = e; await new Promise((r) => setTimeout(r, 500 * (attempt + 1))); } }
+        if (!ab) throw err;
+        if ((await hex(ab)) !== f.sha256) throw new Error(f.name + ' failed its checksum');
+        if (cache) try { await cache.put(url(f), new Response(ab)); } catch (e) {}
+        data.set(f.name, ab); doneFiles++; progress();
+      };
+      const queue = todo.slice(); await Promise.all(Array.from({ length: 4 }, async () => { for (let f; (f = queue.shift());) await fetchOne(f); }));
+      say('Unpacking…');
+      const get = async (f) => data.get(f.name) || (await cache.match(url(f))).arrayBuffer();
+      window.__blobs = {};
+      for (const f of man.files) if (f.kind === 'wasm' || f.kind === 'data') {
+        window.__blobs[f.name.replace(/\.gz$/, '')] = URL.createObjectURL(new Blob([await gunzip(await get(f))], { type: f.kind === 'wasm' ? 'application/wasm' : 'application/octet-stream' }));
+        data.delete(f.name); }
+      const out = new Uint8Array(man.assetBytes); let at = 0;
+      for (const f of man.files.filter((x) => x.kind === 'assets')) { const u = new Uint8Array(await gunzip(await get(f))); out.set(u, at); at += u.length; data.delete(f.name); }
+      window.__assets = out; data.clear();
+      say('Starting…');
+      const glue = man.files.find((f) => f.kind === 'glue');
+      // Cross-site (GitHub Pages): the glue script has to be same-origin (pthread workers can't load a
+      // cross-origin script), so it ships with the page; make sure it matches the wasm that was just fetched.
+      let glueUrl = url(glue);
+      if (API) {
+        const lr = await fetch('libg.js', { cache: 'no-cache' });
+        if (!lr.ok || (await hex(await lr.arrayBuffer())) !== glue.sha256) throw new Error('this page is a version behind the game files; reload in a minute');
+        glueUrl = 'libg.js?h=' + glue.sha256.slice(0, 16);
+      }
+      const sc = document.createElement('script'); sc.src = glueUrl; document.body.appendChild(sc);
+    } catch (e) { console.error(e); say('Could not load the game files: ' + e.message); toast.classList.remove('indet'); }
+  })();
+</script>
+</body>
+</html>
