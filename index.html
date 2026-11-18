@@ -27,16 +27,6 @@
   #status { color:var(--muted); min-height:1.2em; }
   #log { width:min(92vw,720px); max-height:18vh; overflow:auto; font:11px ui-monospace,monospace; color:var(--muted); white-space:pre-wrap; }
 </style>
-<script>
-  // One home for the game and its login: clash.sillyprootsoda.com. The login token is stored per site, so other
-  // addresses (the Workers URL, webroyale.dev) send visitors there instead of showing a second login. Local
-  // development hosts and ?nocanon are left alone.
-  (function () {
-    const CANON = 'clash.sillyprootsoda.com', h = location.hostname;
-    if (h !== CANON && h !== 'localhost' && h !== '127.0.0.1' && !h.endsWith('.localhost') && !/(^|[?&])nocanon(=|&|$)/.test(location.search))
-      location.replace('https://' + CANON + location.pathname + location.search + location.hash);
-  })();
-</script>
 <script src="config.js"></script>
 </head>
 <body>
@@ -400,6 +390,8 @@
     const say = (t, pct) => { text.textContent = t; if (pct == null) toast.classList.add('indet'); else { toast.classList.remove('indet'); bar.style.width = pct + '%'; } };
     const gunzip = (ab) => new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
     const hex = async (ab) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ab)), (b) => b.toString(16).padStart(2, '0')).join('');
+    // The login/register screen comes first, identically on every address, before anything else is needed.
+    try { await getAccount(); } catch (e) { showSignIn(); return; }
     // GitHub Pages can't send the cross-origin isolation headers the game's threads need, so coi-sw.js adds
     // them (the page reloads once after it installs). Pages served by the Worker are already isolated.
     if (!window.crossOriginIsolated) {
