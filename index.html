@@ -57,26 +57,34 @@
     return r.ok ? r.json() : null;
   }
   function showSignIn(msg) {
-    // Small SillyOS sign-in box. The password goes to the bridge over HTTPS, which signs in to SillyOS
-    // server-side and returns only a session token; the token (never the password) is kept in this browser.
+    // WebRoyale login. The password goes to the bridge over HTTPS, which signs in to (or registers with)
+    // SillyOS server-side and returns only a session token; the token (never the password) is kept here.
     document.getElementById('toast').classList.add('done');
     let box = document.getElementById('signin');
     if (!box) {
+      const inp = 'padding:10px;border-radius:8px;border:1px solid #263047;background:#0f1420;color:inherit;font:inherit';
       box = document.createElement('form'); box.id = 'signin';
-      box.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;width:min(320px,calc(100vw - 32px));background:#151b27;border:1px solid #263047;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);font:14px system-ui,sans-serif;color:#cfd6e4';
-      box.innerHTML = '<b style="font-size:16px">Sign in with SillyOS</b><input name="u" placeholder="Username" autocomplete="username" style="padding:9px;border-radius:8px;border:1px solid #263047;background:#0f1420;color:inherit">' +
-        '<input name="p" type="password" placeholder="Password" autocomplete="current-password" style="padding:9px;border-radius:8px;border:1px solid #263047;background:#0f1420;color:inherit">' +
-        '<button style="padding:10px;border:0;border-radius:8px;background:#3b82f6;color:#fff;font-weight:600;cursor:pointer">Sign in</button><div id="signin-msg" style="color:#f87171;min-height:1.2em"></div>';
-      box.onsubmit = async (e) => {
-        e.preventDefault(); const m = document.getElementById('signin-msg'); m.textContent = 'Signing in…';
+      box.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;width:min(320px,calc(100vw - 32px));background:#151b27;border:1px solid #263047;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);font:14px system-ui,sans-serif;color:#cfd6e4';
+      box.innerHTML = '<b style="font-size:18px;text-align:center">WebRoyale Login</b>' +
+        '<input name="u" placeholder="Username" autocomplete="username" autocapitalize="off" style="' + inp + '">' +
+        '<input name="p" type="password" placeholder="Password" autocomplete="current-password" style="' + inp + '">' +
+        '<div style="display:flex;gap:8px"><button type="submit" style="flex:1;padding:10px;border:0;border-radius:8px;background:#3b82f6;color:#fff;font-weight:600;cursor:pointer">Login</button>' +
+        '<button type="button" id="signin-reg" style="flex:1;padding:10px;border:1px solid #3b82f6;border-radius:8px;background:transparent;color:#7db3ff;font-weight:600;cursor:pointer">Register</button></div>' +
+        '<div id="signin-msg" style="color:#f87171;min-height:1.2em;text-align:center"></div>';
+      const go = async (path, busy) => {
+        const m = document.getElementById('signin-msg'); m.style.color = '#f87171';
+        if (!box.u.value.trim() || !box.p.value) { m.textContent = 'Enter a username and password'; return; }
+        m.style.color = '#7a8599'; m.textContent = busy;
         try {
-          const r = await fetch(bridgeHttp() + '/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: box.u.value, password: box.p.value }) });
-          const j = await r.json(); if (!r.ok) { m.textContent = j.error || 'Sign in failed'; return; }
+          const r = await fetch(bridgeHttp() + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: box.u.value.trim(), password: box.p.value }) });
+          const j = await r.json(); if (!r.ok) { m.style.color = '#f87171'; m.textContent = j.error || 'Something went wrong'; return; }
           try { localStorage.setItem('webroyale_sillyos_token', j.token); } catch (err) {}
           location.reload();
-        } catch (err) { m.textContent = 'Could not reach the server'; }
+        } catch (err) { m.style.color = '#f87171'; m.textContent = 'Could not reach the server'; }
       };
+      box.onsubmit = (e) => { e.preventDefault(); go('/login', 'Signing in…'); };
       document.body.appendChild(box);
+      document.getElementById('signin-reg').onclick = () => go('/register', 'Creating your account…');
     }
     if (msg) document.getElementById('signin-msg').textContent = msg;
   }
@@ -103,11 +111,8 @@
     print: log, printErr: log,
     setStatus: (t) => {
       statusEl.textContent = t || 'Running';
-      const toast = document.getElementById('toast'), m = /\((\d+(?:\.\d+)?)\/(\d+)\)/.exec(t || '');
-      if (!t) { document.getElementById('toastText').textContent = 'Starting…'; toast.classList.add('indet'); setTimeout(() => toast.classList.add('done'), 2500); return; }
-      if (m) { const pct = Math.min(100, 100 * m[1] / m[2]); toast.classList.remove('indet'); document.getElementById('toastBar').style.width = pct + '%';
-        document.getElementById('toastText').textContent = 'Loading game… ' + Math.floor(pct) + '%'; }
-      else document.getElementById('toastText').textContent = t.replace(/\.\.\.$/, '…');
+      // The toast is driven by loadDist() while files download; once the game is running it goes away.
+      if (!t) document.getElementById('toast').classList.add('done');
     },
     onAbort: (w) => { statusEl.textContent = 'Stopped: ' + w; },
     // Persistence: the game's writable files (prefs.txt with the account id/token, settings, caches)
@@ -437,7 +442,7 @@
       const out = new Uint8Array(man.assetBytes); let at = 0;
       for (const f of man.files.filter((x) => x.kind === 'assets')) { const u = new Uint8Array(await gunzip(await get(f))); out.set(u, at); at += u.length; data.delete(f.name); }
       window.__assets = out; data.clear();
-      say('Starting…');
+      say('Loading…');
       const glue = man.files.find((f) => f.kind === 'glue');
       // Cross-site (GitHub Pages): the glue script has to be same-origin (pthread workers can't load a
       // cross-origin script), so it ships with the page; make sure it matches the wasm that was just fetched.
