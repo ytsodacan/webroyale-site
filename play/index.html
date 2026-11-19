@@ -103,7 +103,7 @@
         '<div id="signin-msg" style="color:#f87171;min-height:1.2em;text-align:center"></div>';
       // Cloudflare Turnstile (same widget as the site's sign-in page); the box needs its token to log in or register.
       const drawCf = () => { if (!window.turnstile) return setTimeout(drawCf, 300); if (!box.cfId) box.cfId = window.turnstile.render('#signin-cf', { sitekey: '0x4AAAAAAGIdp0W5ZNzVCk9A', theme: 'dark' }); };
-      drawCf();
+
       const go = async (path, busy) => {
         const m = document.getElementById('signin-msg'); m.style.color = '#f87171';
         if (!box.u.value.trim() || !box.p.value) { m.textContent = 'Enter a username and password'; return; }
@@ -119,6 +119,7 @@
       };
       box.onsubmit = (e) => { e.preventDefault(); go('/login', 'Signing in…'); };
       document.body.appendChild(box);
+      drawCf();   // the container must be in the page before Turnstile draws into it
       document.getElementById('signin-reg').onclick = () => go('/register', 'Creating your account…');
     }
     if (msg) document.getElementById('signin-msg').textContent = msg;

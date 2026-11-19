@@ -40,6 +40,8 @@
       <a class="btn gold" href="/play/">Play</a>
       <button class="btn red" id="out" type="button">Log out</button>
     </div>
+    <h3 class="pname" style="font-size:20px;margin:22px 0 8px">Friends</h3>
+    <div id="flist" class="hint" style="text-align:left">Loading your friends…</div>
     <p class="hint" id="acct"></p>
   </div>
 </main>
@@ -61,6 +63,23 @@
     $('sGems').textContent = fmt(p.gems); $('sGems').title = Number(p.gems || 0).toLocaleString(); $('sCrowns').textContent = fmt(p.crowns); $('sArena').textContent = p.arena || 1; $('iArena').src = '/assets/img/arenas/' + Math.min(10, Math.max(1, (p.arena || 0) + 1)) + '.webp';
     $('stats').hidden = false;
     if (p.banned) $('err').textContent = 'This account is banned' + (p.banReason ? ': ' + p.banReason : '.');
+    try {
+      const fr = await fetch(WR.API + '/bridge/friends', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: WR.token() }) });
+      const fj = await fr.json(); const box = $('flist');
+      if (!fr.ok) { box.textContent = fj.error || 'Could not load friends'; return; }
+      if (!fj.friends.length) { box.textContent = 'No friends yet. Add friends on SillyOS and they will show up here.'; return; }
+      box.textContent = '';
+      for (const f of fj.friends) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);margin:6px 0';
+        const dot = document.createElement('span'); dot.style.cssText = 'width:10px;height:10px;border-radius:50%;flex:none;background:' + (f.online ? '#4ade80' : '#64748b');
+        const who = document.createElement('div'); who.style.cssText = 'flex:1;min-width:0';
+        const nm = document.createElement('div'); nm.style.cssText = 'font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; nm.textContent = f.display;
+        const sub = document.createElement('div'); sub.className = 'hint'; sub.style.margin = '0';
+        sub.textContent = f.played ? ((f.gameName && f.gameName !== f.display ? f.gameName + ' · ' : '') + (f.clan ? f.clan + ' · ' : '') + (f.trophies || 0) + ' trophies') : 'Hasn\'t played WebRoyale yet';
+        who.append(nm, sub); row.append(dot, who); box.append(row);
+      }
+    } catch (e) { $('flist').textContent = 'Could not reach the server.'; }
   })();
 </script>
 </body>
