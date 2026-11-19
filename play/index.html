@@ -156,6 +156,7 @@
         FS.writeFile(full, buf.subarray(o, o + dl)); o += dl;
       }
       window.__assets = null;
+      if (window.__textsCsv) { try { FS.writeFile('/assets/csv_client/texts.csv', window.__textsCsv); } catch (e) {} window.__textsCsv = null; }
     }, () => {
       FS.mkdir('/fs'); FS.mount(IDBFS, {}, '/fs');
       addRunDependency('idbfs');
@@ -478,6 +479,12 @@
       for (const f of man.files.filter((x) => x.kind === 'assets')) { const u = new Uint8Array(await gunzip(await get(f))); out.set(u, at); at += u.length; data.delete(f.name); }
       window.__assets = out; data.clear();
       say('Loading…');
+      // Admin-set game settings: free chat on/off, and custom emote texts (a patched texts.csv written over the asset).
+      try {
+        const cr = await fetch(bridgeHttp() + '/config', { cache: 'no-store' });
+        if (cr.ok) { window.__wrCfg = await cr.json();
+          if (window.__wrCfg.texts) { const tr = await fetch(bridgeHttp() + '/config/texts.csv?v=' + window.__wrCfg.texts); if (tr.ok) window.__textsCsv = new Uint8Array(await tr.arrayBuffer()); } }
+      } catch (e) {}
       const glue = man.files.find((f) => f.kind === 'glue');
       // Cross-site (GitHub Pages): the glue script has to be same-origin (pthread workers can't load a
       // cross-origin script), so it ships with the page; make sure it matches the wasm that was just fetched.
