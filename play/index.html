@@ -372,7 +372,7 @@
     }
     let polling = false;
     setInterval(async () => {
-      if (polling || document.hidden || !sillyToken() || !(window.__wrCfg && window.__wrCfg.freeChat)) return;
+      if (polling || document.hidden || !sillyToken()) return;
       polling = true;
       try {
         const r = await post('/chat/poll', {}); if (!r.ok) return; const j = await r.json();
