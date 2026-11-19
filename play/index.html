@@ -5,35 +5,56 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Play WebRoyale – OG Clash Royale in your browser</title>
 <meta name="description" content="Play the original 2016 Clash Royale (v1.9.2) free in your web browser.">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png">
 <style>
-  :root { --bg:#0b0f17; --fg:#cfd6e4; --muted:#7a8599; }
+  @font-face { font-family:"Clash"; src:url(/assets/fonts/clash.woff2) format("woff2"); font-display:swap; }
+  :root { --bg:#0a1a33; --fg:#f2f5fa; --muted:#a4b5d1; --gold:#ffcc2e; --goldEdge:#c98600; --blue:#3a8dff; --blueEdge:#1c56b8; --display:"Clash", system-ui, sans-serif; --navh:64px; }
   html,body { margin:0; height:100%; background:var(--bg); color:var(--fg); font:14px system-ui,sans-serif; }
-  body { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
-  canvas { height:min(96vh,1280px); max-width:100vw; aspect-ratio:9/16; background:#000; display:block; }
-  body.dev canvas { height:min(86vh,1280px); }
+  body { display:flex; flex-direction:column; background:
+    linear-gradient(135deg, rgba(255,255,255,.035) 25%, transparent 25%) 0 0/72px 72px,
+    linear-gradient(225deg, rgba(255,255,255,.035) 25%, transparent 25%) 0 0/72px 72px, #0a1a33; }
+  .nav { flex:none; height:var(--navh); display:flex; align-items:center; gap:10px; padding:0 18px; background:linear-gradient(180deg,#123468,#0c2550); border-bottom:2px solid #08193a; }
+  .brand { display:flex; align-items:center; gap:10px; color:#fff; font:400 22px var(--display); letter-spacing:.02em; text-decoration:none; }
+  .brand img { width:38px; height:auto; }
+  .nav .menu { display:flex; gap:4px; margin-left:16px; }
+  .nav .menu a { color:#dbe6f8; font:400 15px var(--display); padding:8px 12px; border-radius:10px; text-decoration:none; }
+  .nav .menu a:hover { background:rgba(255,255,255,.08); color:#fff; }
+  .nav .sp { flex:1; }
+  .nbtn { display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font:400 14px/1 var(--display); letter-spacing:.02em; color:#4a2f00; background:linear-gradient(180deg,#ffe066,var(--gold));
+    border:0; border-radius:10px; padding:9px 14px 10px; box-shadow:inset 0 -4px 0 var(--goldEdge); text-decoration:none; }
+  .nbtn:active { transform:translateY(2px); box-shadow:inset 0 -2px 0 var(--goldEdge); }
+  .nbtn.blue { color:#fff; background:linear-gradient(180deg,#5aa2ff,var(--blue)); box-shadow:inset 0 -4px 0 var(--blueEdge); }
+  main { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:14px 0; }
+  .frame { padding:6px; border-radius:20px; background:linear-gradient(180deg,#2a5db0,#173c7a); border:3px solid #08193a; line-height:0; }
+  canvas { height:min(calc(100vh - var(--navh) - 62px),1280px); max-width:calc(100vw - 32px); aspect-ratio:9/16; background:#000; display:block; border-radius:14px; }
+  .foot { flex:none; text-align:center; color:var(--muted); font:12px system-ui,sans-serif; padding:0 0 10px; }
+  .foot a { color:var(--gold); text-decoration:none; }
+  body.dev canvas { height:min(70vh,1280px); }
   #status, #log { display:none; } body.dev #status, body.dev #log { display:block; }
-  #fs { position:fixed; top:12px; right:12px; z-index:8; width:40px; height:40px; border:0; border-radius:10px;
-    background:rgba(29,36,51,.85); color:#fff; cursor:pointer; display:grid; place-items:center; }
-  #fs:hover { background:rgba(59,130,246,.9); }
-  :fullscreen #fs { opacity:.35; } :fullscreen #fs:hover { opacity:1; }
-  :fullscreen canvas { height:100vh; }
-  #toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:9; min-width:220px; max-width:calc(100vw - 32px);
-    background:rgba(17,22,33,.92); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.4);
-    font:13px system-ui,sans-serif; color:var(--fg); transition:opacity .4s, transform .4s; }
+  #fs { position:fixed; top:12px; right:12px; z-index:8; width:40px; height:40px; border:0; border-radius:10px; background:linear-gradient(180deg,#5aa2ff,var(--blue)); box-shadow:inset 0 -3px 0 var(--blueEdge);
+    color:#fff; cursor:pointer; display:grid; place-items:center; top:calc(var(--navh) + 14px); right:14px; }
+  :fullscreen .nav, :fullscreen .foot { display:none; } :fullscreen main { padding:0; } :fullscreen .frame { padding:0; border:0; border-radius:0; background:none; }
+  :fullscreen canvas { height:100vh; border-radius:0; max-width:100vw; } :fullscreen #fs { top:12px; opacity:.35; } :fullscreen #fs:hover { opacity:1; }
+  #toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); z-index:9; min-width:240px; max-width:calc(100vw - 32px);
+    background:linear-gradient(180deg,#123468,#0c2550); border:2px solid #08193a; border-radius:14px; padding:12px 16px; font:400 14px var(--display); letter-spacing:.02em; color:#fff; transition:opacity .4s, transform .4s; }
   #toast.done { opacity:0; transform:translateX(-50%) translateY(12px); pointer-events:none; }
-  #toast .bar { height:4px; margin-top:8px; border-radius:2px; background:rgba(255,255,255,.1); overflow:hidden; }
-  #toast .bar i { display:block; height:100%; width:0; background:#3b82f6; transition:width .2s; }
+  #toast .bar { height:8px; margin-top:9px; border-radius:6px; background:#08193a; overflow:hidden; }
+  #toast .bar i { display:block; height:100%; width:0; background:linear-gradient(180deg,#ffe066,var(--gold)); border-radius:6px; transition:width .2s; }
   #toast.indet .bar i { width:30%; animation:slide 1.1s ease-in-out infinite; }
   @keyframes slide { from { margin-left:-30%; } to { margin-left:100%; } }
   #status { color:var(--muted); min-height:1.2em; }
   #log { width:min(92vw,720px); max-height:18vh; overflow:auto; font:11px ui-monospace,monospace; color:var(--muted); white-space:pre-wrap; }
+  @media (max-width:640px) { .nav .menu { display:none; } }
 </style>
 <script src="config.js"></script>
 </head>
 <body>
 <button id="fs" title="Fullscreen" aria-label="Fullscreen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-<canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<header class="nav"><a class="brand" href="https://webroyale.dev/"><img src="/assets/img/icons/blue.webp" alt="" width="38" height="28">WebRoyale</a>
+  <nav class="menu"><a href="https://webroyale.dev/#cards">Cards</a><a href="https://webroyale.dev/#arenas">Arenas</a><a href="https://webroyale.dev/#chests">Chests</a><a href="https://webroyale.dev/#faq">FAQ</a></nav>
+  <span class="sp"></span><a class="nbtn blue" href="https://webroyale.dev/account/" id="acctLink">Account</a></header>
+<main><div class="frame"><canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas></div></main>
+<div class="foot">Unofficial fan project · not affiliated with Supercell · <a href="https://webroyale.dev/">webroyale.dev</a></div>
 <div id="status">Loading…</div>
 <div id="toast" class="indet"><span id="toastText">Loading…</span><div class="bar"><i id="toastBar"></i></div></div>
 <div id="log"></div>
@@ -273,15 +294,15 @@
   #ui { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:10; }
   #ui[hidden] { display:none; }
   #kbbar { position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(420px,94vw); display:flex; gap:8px; z-index:9;
-    background:#1d2433; padding:8px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.5); }
+    background:linear-gradient(180deg,#123468,#0c2550); border:2px solid #08193a; padding:8px; border-radius:14px; }
   #kbbar[hidden] { display:none; }
-  #kbbar-input { flex:1; padding:10px; font-size:16px; border-radius:8px; border:0; }
-  #kbbar-send { padding:10px 16px; font-size:15px; border-radius:8px; border:0; background:#3b82f6; color:#fff; cursor:pointer; }
-  #ui-box { background:#1d2433; color:#fff; padding:20px; border-radius:12px; width:min(360px,90vw); font:15px system-ui,sans-serif; }
+  #kbbar-input { flex:1; padding:10px; font:16px var(--display); border-radius:10px; border:0; background:#fff; color:#0a1a33; }
+  #kbbar-send { padding:10px 18px 12px; font:400 16px var(--display); border-radius:10px; border:0; background:linear-gradient(180deg,#ffe066,#ffcc2e); box-shadow:inset 0 -4px 0 #c98600; color:#4a2f00; cursor:pointer; }
+  #ui-box { background:linear-gradient(180deg,#123468,#0c2550); border:2px solid #08193a; color:#fff; padding:20px; border-radius:16px; width:min(360px,90vw); font:400 15px var(--display); }
   #ui-title { font-weight:700; margin-bottom:8px; } #ui-msg { margin-bottom:12px; white-space:pre-wrap; }
   #ui-input { width:100%; box-sizing:border-box; padding:8px; font-size:16px; margin-bottom:12px; }
   #ui-buttons { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
-  #ui-buttons button { padding:8px 14px; font-size:15px; border-radius:8px; border:0; cursor:pointer; }
+  #ui-buttons button { padding:9px 16px 11px; font:400 15px var(--display); border-radius:10px; border:0; cursor:pointer; background:linear-gradient(180deg,#5aa2ff,#3a8dff); box-shadow:inset 0 -4px 0 #1c56b8; color:#fff; }
 </style>
 <script>
   // Non-blocking stand-ins for the Android keyboard and native dialogs; the game polls the results.
@@ -312,13 +333,56 @@
       kbOn = window.__kbActive = true; kbText = text || '';
     };
     Module.uiKeyboardHide = () => { kbOn = window.__kbActive = false; bar.hidden = true; barIn.blur(); };
-    const barSend = () => { Module.__kbResult = barIn.value; Module.__kbOk = 1; bar.hidden = true; barIn.blur(); };
+    let chatMode = false;
+    const barSend = () => {
+      if (chatMode) { const t = barIn.value.trim(); chatMode = false; bar.hidden = true; barIn.blur(); barIn.placeholder = 'Message'; if (t) wrSend(t); return; }
+      Module.__kbResult = barIn.value; Module.__kbOk = 1; bar.hidden = true; barIn.blur(); };
     barIn.addEventListener('input', () => { Module.__kbResult = barIn.value; });
     barIn.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); barSend(); }
-      else if (e.key === 'Escape') { bar.hidden = true; barIn.blur(); Module.__kbResult = null; }
+      else if (e.key === 'Escape') { chatMode = false; barIn.placeholder = 'Message'; bar.hidden = true; barIn.blur(); Module.__kbResult = null; }
       e.stopPropagation();
     });
+    // ---- Typed free chat, shown through the game's own taunt bubbles --------------------------------------------
+    // The "Type a message..." button (Taunt6) makes the server flag this player; the poll below sees the flag and opens the
+    // text box. Sent text goes bridge -> game server; every player in the battle (sender included) gets it back through the
+    // poll: it is written over the placeholder text of a hidden taunt (WRCHATn) in game memory, then the server sends the
+    // normal taunt event ~450 ms later and the game shows its usual bubble with that text.
+    const MLEN = 60, addrs = {};
+    const markerAddrs = (n) => {
+      const h = Module.__heap && Module.__heap(); if (!h) return [];
+      if (addrs[n] && addrs[n].length) return addrs[n];
+      const pat = Array.from('WRCHAT' + n + '.'.repeat(MLEN - 7), (c) => c.charCodeAt(0)), out = []; let i = -1;
+      while ((i = h.indexOf(pat[0], i + 1)) !== -1) { let ok = true; for (let k = 1; k < MLEN; k++) if (h[i + k] !== pat[k]) { ok = false; break; } if (ok) out.push(i); }
+      return (addrs[n] = out);
+    };
+    const putChat = (n, text) => {
+      const h = Module.__heap && Module.__heap(); if (!h) return false;
+      const bytes = new Uint8Array(MLEN).fill(32); let enc = new TextEncoder().encode(text.replace(/[^\x20-\x7e]/g, '?').slice(0, MLEN));
+      bytes.set(enc);
+      const a = markerAddrs(n); if (!a.length) return false;
+      for (const at of a) h.set(bytes, at);
+      return true;
+    };
+    window.__wrChatLog = [];
+    const post = (path, body) => fetch(bridgeHttp() + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ token: sillyToken() }, body)) });
+    async function wrSend(text) {
+      try { const r = await post('/chat', { text }); if (!r.ok) { const j = await r.json().catch(() => ({})); window.__wrChatLog.push('send failed: ' + (j.error || r.status)); } }
+      catch (e) { window.__wrChatLog.push('send error ' + e); }
+    }
+    let polling = false;
+    setInterval(async () => {
+      if (polling || document.hidden || !sillyToken() || !(window.__wrCfg && window.__wrCfg.freeChat)) return;
+      polling = true;
+      try {
+        const r = await post('/chat/poll', {}); if (!r.ok) return; const j = await r.json();
+        for (const m of j.msgs || []) { const ok = putChat(m.slot, m.text); window.__wrChatLog.push((ok ? 'shown ' : 'NO MARKER ') + m.slot + ' ' + m.text); }
+        if (j.open && !chatMode) {
+          chatMode = true; kbOn = window.__kbActive = false; barIn.value = ''; barIn.maxLength = 48; barIn.placeholder = 'Type a message'; bar.hidden = false;
+          if (document.pointerLockElement) document.exitPointerLock(); setTimeout(() => barIn.focus(), 0);
+        }
+      } catch (e) {} finally { polling = false; }
+    }, 700);
     $('kbbar-send').onclick = barSend;
     document.addEventListener('keydown', (e) => {
       if (!kbOn || !$('ui').hidden) return;

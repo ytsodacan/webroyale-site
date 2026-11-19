@@ -4061,6 +4061,7 @@ var FS = {
 /** @type {!Int16Array} */ var HEAP16;
 
 /** @type {!Uint8Array} */ var HEAPU8;
+Module["__heap"] = () => (growMemViews(), HEAPU8);
 
 /**
    * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
