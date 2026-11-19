@@ -8,7 +8,7 @@
 <meta name="keywords" content="clash royale web, clash royale browser, play clash royale online, og clash royale, old clash royale, clash royale 2016, clash royale private server, clash royale unblocked, webroyale">
 <link rel="canonical" href="https://webroyale.dev/">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="theme-color" content="#1b4f9c">
+<meta name="theme-color" content="#0a1628">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/og.png">
 <meta property="og:type" content="website">
@@ -24,7 +24,7 @@
 <meta name="twitter:image" content="https://webroyale.dev/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
@@ -43,72 +43,61 @@
 <body>
 <header class="nav">
   <div class="wrap">
-    <a class="brand outline" href="/" aria-label="WebRoyale home">
-      <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#crown"/></svg>WebRoyale
-    </a>
+    <a class="brand" href="/" aria-label="WebRoyale home"><img src="/favicon.svg" width="28" height="28" alt="">WebRoyale</a>
     <span class="spacer"></span>
     <nav class="links" id="navAuth" aria-label="Account">
-      <a class="btn sm" href="/login/">Login</a>
+      <a class="btn sm ghost" href="/login/">Log in</a>
       <a class="btn sm gold" href="/signup/">Sign up</a>
     </nav>
   </div>
 </header>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="crown" viewBox="0 0 64 64"><path d="M8 50 5 18l15 13L32 8l12 23 15-13-3 32z" fill="#ffd23f" stroke="#0b1630" stroke-width="4" stroke-linejoin="round"/><rect x="7" y="48" width="50" height="9" rx="3" fill="#f5a400" stroke="#0b1630" stroke-width="4"/><circle cx="32" cy="34" r="5" fill="#ff5a5a" stroke="#0b1630" stroke-width="3"/><circle cx="18" cy="38" r="3.5" fill="#4fb3ff" stroke="#0b1630" stroke-width="2.5"/><circle cx="46" cy="38" r="3.5" fill="#4fb3ff" stroke="#0b1630" stroke-width="2.5"/></symbol>
-</svg>
-
 <main>
   <section class="hero">
-    <div class="wrap">
-      <svg class="crown" viewBox="0 0 64 64" aria-hidden="true"><use href="#crown"/></svg>
-      <h1 class="outline"><span class="og">OG Clash Royale</span><span class="sub">in your Web Browser</span></h1>
-      <p class="lead">The original 2016 Clash Royale, free and right in your browser. No download, no install. Just tap Play and battle.</p>
-      <div class="cta">
-        <a class="btn gold xl" href="/play/">Play</a>
-        <span class="note">Free · Desktop &amp; mobile · Real-time PvP</span>
-      </div>
+    <div class="hero-bg">
+      <img class="sharp" src="/assets/img/banner.jpg" width="1500" height="500" alt="Clash Royale characters: the Knight, Prince, Skeletons and King">
+      <img class="blur" src="/assets/img/banner.jpg" width="1500" height="500" alt="" aria-hidden="true">
     </div>
-    <div class="towers" aria-hidden="true">
-      <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-        <path d="M0 70 Q300 40 600 62 T1200 58 V120 H0z" fill="#3f9b3a"/>
-        <path d="M0 86 Q300 64 600 82 T1200 78 V120 H0z" fill="#2f7d2c"/>
-        <g stroke="#0b1630" stroke-width="4" stroke-linejoin="round">
-          <path d="M90 92V40h-8V22h12v8h10v-8h12v8h10v-8h12v18h-8v52z" fill="#e9e2d0"/><path d="M98 92V66h20v26z" fill="#7a4a22"/>
-          <path d="M1048 92V40h-8V22h12v8h10v-8h12v8h10v-8h12v18h-8v52z" fill="#e9e2d0"/><path d="M1056 92V66h20v26z" fill="#7a4a22"/>
-          <path d="M540 96V30h-10V8h16v10h12V8h16v10h12V8h16v22h-10v66z" fill="#e9e2d0"/><path d="M572 96V64h28v32z" fill="#7a4a22"/>
-        </g>
-        <path d="M0 106 Q600 92 1200 104 V120 H0z" fill="#1f5e1d"/>
-      </svg>
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <h1>OG Clash Royale <span>in your Web Browser</span></h1>
+        <p class="lead">The original 2016 Clash Royale, free and right in your browser. No download, no install.</p>
+        <div class="cta">
+          <a class="btn gold xl" href="/play/">Play</a>
+          <span class="note">Free · Desktop &amp; mobile · Real-time PvP</span>
+        </div>
+      </div>
     </div>
   </section>
 
   <section id="features">
     <div class="wrap">
-      <h2 class="outline">The Clash Royale you remember</h2>
+      <h2>The Clash Royale you remember</h2>
+      <p class="sub">Version 1.9.2, the way it was in 2016.</p>
       <div class="grid">
-        <article class="panel"><svg class="ico" viewBox="0 0 64 64" aria-hidden="true"><use href="#crown"/></svg><h3 class="outline">Classic 2016 gameplay</h3><p>Version 1.9.2 with the original cards, arenas and battle feel, before years of updates changed it.</p></article>
-        <article class="panel"><svg class="ico" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="12" width="48" height="34" rx="5" fill="#4fb3ff" stroke="#0b1630" stroke-width="4"/><path d="M24 54h16M32 46v8" stroke="#0b1630" stroke-width="4" stroke-linecap="round"/><path d="m28 22 12 7-12 7z" fill="#ffd23f" stroke="#0b1630" stroke-width="3" stroke-linejoin="round"/></svg><h3 class="outline">Runs in your browser</h3><p>No app store, no APK, no emulator. It loads in a browser tab on your computer, Chromebook or phone.</p></article>
-        <article class="panel"><svg class="ico" viewBox="0 0 64 64" aria-hidden="true"><path d="m14 50 26-26M50 50 24 24" stroke="#0b1630" stroke-width="10" stroke-linecap="round"/><path d="m14 50 26-26M50 50 24 24" stroke="#e9e2d0" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="14" r="7" fill="#ff5a5a" stroke="#0b1630" stroke-width="4"/></svg><h3 class="outline">Real PvP battles</h3><p>Battle real players live. If nobody else is queued after a minute, a training bot steps in so you can always play.</p></article>
-        <article class="panel"><svg class="ico" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 52 14v16c0 13-8 22-20 28C20 52 12 43 12 30V14z" fill="#7dff8a" stroke="#0b1630" stroke-width="4" stroke-linejoin="round"/><path d="m23 32 7 7 12-14" fill="none" stroke="#0b1630" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3 class="outline">Free, one account</h3><p>Sign up once and your progress, trophies and cards are saved to your account on every device.</p></article>
+        <article class="panel"><h3>Classic 2016 gameplay</h3><p>The original cards, arenas and battle feel, before years of updates changed it.</p></article>
+        <article class="panel"><h3>Runs in your browser</h3><p>No app store, no APK, no emulator. It loads in a tab on your computer, Chromebook or phone.</p></article>
+        <article class="panel"><h3>Real PvP battles</h3><p>Battle real players live. If nobody else is queued after a minute, a training bot steps in.</p></article>
+        <article class="panel"><h3>One free account</h3><p>Sign up once and your trophies and cards are saved to your account on every device.</p></article>
       </div>
     </div>
   </section>
 
   <section id="how">
     <div class="wrap">
-      <h2 class="outline">How to play</h2>
+      <h2>How to play</h2>
+      <p class="sub">Three steps and you're in the arena.</p>
       <div class="grid steps">
-        <div class="panel"><h3 class="outline">Create an account</h3><p>Hit <a href="/signup/">Sign up</a> and pick a username and password. It's free and takes seconds.</p></div>
-        <div class="panel"><h3 class="outline">Press Play</h3><p>The game downloads once (it's cached for next time) and starts right in the tab.</p></div>
-        <div class="panel"><h3 class="outline">Battle!</h3><p>Tap Battle, drop your cards and take down the enemy towers to win trophies.</p></div>
+        <div class="panel"><h3>Create an account</h3><p><a href="/signup/">Sign up</a> with a username and password. It's free.</p></div>
+        <div class="panel"><h3>Press Play</h3><p>The game downloads once, is cached for next time, and starts in the tab.</p></div>
+        <div class="panel"><h3>Battle</h3><p>Tap Battle, drop your cards and take down the enemy towers to win trophies.</p></div>
       </div>
     </div>
   </section>
 
   <section id="faq">
     <div class="wrap">
-      <h2 class="outline">FAQ</h2>
+      <h2 style="margin-bottom:32px">FAQ</h2>
       <div class="faq">
         <details><summary>Is WebRoyale free?</summary><p>Yes. WebRoyale is completely free to play. You only need a free account.</p></details>
         <details><summary>Do I need to download anything?</summary><p>No. The game runs right in your web browser. The game files download once on your first visit and are cached after that.</p></details>
@@ -121,18 +110,16 @@
 
   <section class="band">
     <div class="wrap">
-      <div class="panel">
-        <h2 class="outline" style="margin:0">Ready to battle?</h2>
-        <p>Jump straight into the arena. It's free.</p>
-        <a class="btn gold xl" href="/play/">Play now</a>
-      </div>
+      <h2>Ready to battle?</h2>
+      <p>Jump straight into the arena. It's free.</p>
+      <a class="btn gold xl" href="/play/">Play now</a>
     </div>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <nav aria-label="Footer"><a href="/play/">Play</a><a href="/login/">Login</a><a href="/signup/">Sign up</a><a href="/account/">My Account</a><a href="#faq">FAQ</a></nav>
+    <nav aria-label="Footer"><a href="/play/">Play</a><a href="/login/">Log in</a><a href="/signup/">Sign up</a><a href="/account/">My Account</a><a href="#faq">FAQ</a></nav>
     <p>WebRoyale is a fan project. This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell, and Supercell is not responsible for it.</p>
     <p>Clash Royale is a trademark of Supercell Oy.</p>
   </div>
