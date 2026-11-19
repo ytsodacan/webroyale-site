@@ -110,6 +110,18 @@
     try { localStorage.setItem('webroyale_silly_user', j.user); } catch (e) {}
     return true;
   }
+  // Battle score: the game reports its own crown count; the server decides the match result from it.
+  (function () {
+    let last = -1;
+    setInterval(() => {
+      if (typeof Module === 'undefined' || !Module._web_battle_score || !sillyToken()) return;
+      let v; try { v = Module._web_battle_score(); } catch (e) { return; }
+      if (v === last) return; last = v;
+      if (v < 0) return;
+      fetch(bridgeHttp() + '/result', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: sillyToken(), mine: v >> 4, theirs: v & 15 }) }).catch(() => { last = -2; });
+    }, 500);
+  })();
   // Crash diagnostics: report errors (capped) to the bridge log so they can be read server-side.
   var dbgN = 0;
   function dbg(k, v) {

@@ -48,7 +48,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/53/xr563mzj3f534kn1gyps7gx00000gn/T/tmpl_mz190r.js
+// include: /var/folders/53/xr563mzj3f534kn1gyps7gx00000gn/T/tmp359cln1q.js
 if (!Module["expectedDataFileDownloads"]) Module["expectedDataFileDownloads"] = 0;
 
 Module["expectedDataFileDownloads"]++;
@@ -171,7 +171,7 @@ Module["expectedDataFileDownloads"]++;
   });
 }))();
 
-// end include: /var/folders/53/xr563mzj3f534kn1gyps7gx00000gn/T/tmpl_mz190r.js
+// end include: /var/folders/53/xr563mzj3f534kn1gyps7gx00000gn/T/tmp359cln1q.js
 var programArgs = [];
 
 var thisProgram = "./this.program";
@@ -7025,15 +7025,15 @@ Module["IDBFS"] = IDBFS;
 var proxiedFunctionTable = [ exitOnMainThread, _proc_exit, pthreadCreateProxied, ___syscall_fcntl64, ___syscall_fstat64, ___syscall_getdents64, ___syscall_ioctl, ___syscall_lstat64, ___syscall_mkdirat, ___syscall_newfstatat, ___syscall_openat, ___syscall_pipe2, ___syscall_poll, ___syscall_renameat, ___syscall_rmdir, ___syscall_stat64, ___syscall_unlinkat, setCanvasElementSizeMainThread, _environ_get, _environ_sizes_get, _fd_close, _fd_read, _fd_seek, _fd_write ];
 
 var ASM_CONSTS = {
-  750512: () => {
+  750528: () => {
     var f = Module.__fm;
     if (f) f.ctx.resume();
   },
-  750560: () => {
+  750576: () => {
     var f = Module.__fm;
     if (f) f.ctx.suspend();
   },
-  750609: $0 => {
+  750625: $0 => {
     var f = Module.__fm;
     if (!f) return;
     var g = f.ctx.createGain();
@@ -7043,16 +7043,16 @@ var ASM_CONSTS = {
     o.paused = false;
     f.grp[$0] = o;
   },
-  750756: $0 => {
+  750772: $0 => {
     var f = Module.__fm;
     if (f) delete f.snd[$0];
   },
-  750806: $0 => {
+  750822: $0 => {
     var f = Module.__fm;
     var s = f && f.snd[$0];
     return s && s.ms ? s.ms : 1e3;
   },
-  750887: ($0, $1, $2, $3) => {
+  750903: ($0, $1, $2, $3) => {
     var f = Module.__fm;
     if (!f) return;
     var s = f.snd[$1];
@@ -7105,7 +7105,7 @@ var ASM_CONSTS = {
     if (g && g.paused) c.paused = true;
     c.start();
   },
-  751874: $0 => {
+  751890: $0 => {
     var f = Module.__fm;
     if (!f) return;
     var stop = function(c) {
@@ -7114,14 +7114,14 @@ var ASM_CONSTS = {
     };
     if (f.ch[$0]) stop(f.ch[$0]); else if (f.grp[$0]) for (var k in f.ch) if (f.ch[k].group === $0) stop(f.ch[k]);
   },
-  752080: $0 => {
+  752096: $0 => {
     var f = Module.__fm;
     if (!f) return 0;
     var c = f.ch[$0];
     if (!c) return f.grp[$0] ? 1 : 0;
     return c.done ? 0 : 1;
   },
-  752198: ($0, $1) => {
+  752214: ($0, $1) => {
     var f = Module.__fm;
     if (!f) return;
     var p = !!$1;
@@ -7139,13 +7139,13 @@ var ASM_CONSTS = {
       for (var k in f.ch) if (f.ch[k].group === $0 && !f.ch[k].done) apply(f.ch[k]);
     }
   },
-  752515: ($0, $1) => {
+  752531: ($0, $1) => {
     var f = Module.__fm;
     if (!f) return;
     var o = f.ch[$0] || f.grp[$0];
     if (o) o.gain.gain.value = Math.max(0, $1);
   },
-  752631: ($0, $1, $2) => {
+  752647: ($0, $1, $2) => {
     var f = Module.__fm;
     var c = f && f.ch[$0];
     if (!c) return;
@@ -7154,26 +7154,26 @@ var ASM_CONSTS = {
     c.offset = $2 === 1 ? $1 / 1e3 : $1 / 44100;
     if (wasPlaying) c.start();
   },
-  752804: $0 => {
+  752820: $0 => {
     var f = Module.__fm;
     var c = f && f.ch[$0];
     return c ? c.rate : 1;
   },
-  752875: ($0, $1) => {
+  752891: ($0, $1) => {
     var f = Module.__fm;
     var c = f && f.ch[$0];
     if (!c) return;
     c.rate = $1 > 0 ? $1 / 44100 : 1;
     if (c.src) c.src.playbackRate.value = c.rate;
   },
-  753019: ($0, $1) => {
+  753035: ($0, $1) => {
     var f = Module.__fm;
     var c = f && f.ch[$0];
     if (!c) return;
     c.loop = $1 !== 0;
     if (c.src) c.src.loop = c.loop;
   },
-  753134: ($0, $1) => {
+  753150: ($0, $1) => {
     var f = Module.__fm;
     var c = f && f.ch[$0];
     if (!c) return;
@@ -7182,7 +7182,7 @@ var ASM_CONSTS = {
     c.gain.connect(g ? g.gain : f.master);
     c.group = $1;
   },
-  753291: () => {
+  753307: () => {
     if (typeof AudioContext === "undefined" || Module.__fm) return;
     var ctx = new AudioContext;
     var master = ctx.createGain();
@@ -7196,7 +7196,7 @@ var ASM_CONSTS = {
     fm.grp = {};
     Module.__fm = fm;
   },
-  753577: ($0, $1, $2) => {
+  753593: ($0, $1, $2) => {
     var f = Module.__fm;
     if (!f) return;
     var name = UTF8ToString($1);
@@ -7236,7 +7236,7 @@ var ASM_CONSTS = {
       for (var i = 0; i < w.length; i++) w[i]();
     });
   },
-  754423: ($0, $1, $2, $3, $4, $5) => {
+  754439: ($0, $1, $2, $3, $4, $5) => {
     var id = $0;
     var sock = $1;
     var ring = $2;
@@ -7284,22 +7284,22 @@ var ASM_CONSTS = {
       set(4);
     }); else open("");
   },
-  755825: ($0, $1, $2) => {
+  755841: ($0, $1, $2) => {
     var ws = Module.__ws && Module.__ws[$0];
     if (ws && ws.readyState === 1) ws.send((growMemViews(), HEAPU8).slice($1, $1 + $2));
     _free($1);
   },
-  755948: $0 => {
+  755964: $0 => {
     var ws = Module.__ws && Module.__ws[$0];
     if (ws) ws.close();
   },
-  756013: ($0, $1, $2) => {
+  756029: ($0, $1, $2) => {
     if (Module.uiKeyboard) Module.uiKeyboard(UTF8ToString($0), $1, $2);
   },
-  756085: () => {
+  756101: () => {
     if (Module.uiKeyboardHide) Module.uiKeyboardHide();
   },
-  756141: () => {
+  756157: () => {
     var v = Module.__kbResult;
     if (v === undefined) return 0;
     Module.__kbResult = undefined;
@@ -7309,24 +7309,24 @@ var ASM_CONSTS = {
     stringToUTF8(v, p, n);
     return p;
   },
-  756349: $0 => UTF8ToString($0).length,
-  756385: () => Module.__kbOk ? (Module.__kbOk = 0) + 1 : 0,
-  756441: ($0, $1, $2, $3, $4, $5) => {
+  756365: $0 => UTF8ToString($0).length,
+  756401: () => Module.__kbOk ? (Module.__kbOk = 0) + 1 : 0,
+  756457: ($0, $1, $2, $3, $4, $5) => {
     if (Module.uiDialog) Module.uiDialog($0, UTF8ToString($1), UTF8ToString($2), UTF8ToString($3), UTF8ToString($4), UTF8ToString($5));
   },
-  756577: () => {
+  756593: () => {
     var d = Module.__dlgResult;
     if (!d) return 0;
     Module.__dlgResult = null;
     return (d.id << 4) | d.button;
   },
-  756685: ($0, $1, $2, $3, $4) => {
+  756701: ($0, $1, $2, $3, $4) => {
     if (Module.uiWebView) Module.uiWebView(UTF8ToString($0), $1, $2, $3, $4);
   }
 };
 
 // Imports from the Wasm binary.
-var _malloc, _free, _game_frame, _web_set_touch, _web_touch_count, _main, __emscripten_tls_init, _pthread_self, __emscripten_thread_init, ___set_thread_state, __emscripten_thread_crashed, __emscripten_run_js_on_main_thread_done, __emscripten_run_js_on_main_thread, __emscripten_thread_free_data, __emscripten_thread_exit, __emscripten_check_mailbox, _setThrew, _emscripten_stack_set_limits, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, __indirect_function_table, wasmTable;
+var _malloc, _free, _game_frame, _web_set_touch, _web_touch_count, _web_battle_score, _main, __emscripten_tls_init, _pthread_self, __emscripten_thread_init, ___set_thread_state, __emscripten_thread_crashed, __emscripten_run_js_on_main_thread_done, __emscripten_run_js_on_main_thread, __emscripten_thread_free_data, __emscripten_thread_exit, __emscripten_check_mailbox, _setThrew, _emscripten_stack_set_limits, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, __indirect_function_table, wasmTable;
 
 function assignWasmExports(wasmExports) {
   _malloc = Module["_malloc"] = wasmExports["malloc"];
@@ -7334,6 +7334,7 @@ function assignWasmExports(wasmExports) {
   _game_frame = Module["_game_frame"] = wasmExports["game_frame"];
   _web_set_touch = Module["_web_set_touch"] = wasmExports["web_set_touch"];
   _web_touch_count = Module["_web_touch_count"] = wasmExports["web_touch_count"];
+  _web_battle_score = Module["_web_battle_score"] = wasmExports["web_battle_score"];
   _main = Module["_main"] = wasmExports["__main_argc_argv"];
   __emscripten_tls_init = wasmExports["_emscripten_tls_init"];
   _pthread_self = wasmExports["pthread_self"];
