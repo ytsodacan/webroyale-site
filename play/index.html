@@ -478,12 +478,14 @@
   // its hash changes. Without Cache Storage (private window) it simply downloads each visit.
   (async function loadDist() {
     const toast = document.getElementById('toast'), text = document.getElementById('toastText'), bar = document.getElementById('toastBar');
-    // Game files (wasm + assets, ~93 MB), tried in this order: GitHub Pages (webroyale.dev/play/dist), jsDelivr (a mirror of the
-    // same GitHub repo), then the Worker's own copy. Every file is checked against the manifest's sha256, so a stale or broken
-    // mirror just means the next source is used. ?dist=<url> forces one source.
+    // Game files (wasm + assets, ~93 MB) live in the GitHub repo that also serves the site. Two ways to read it: jsDelivr (a CDN over
+    // the repo: fast) and GitHub Pages (webroyale.dev/play/dist: authoritative, but GitHub throttles bulk downloads); the Worker keeps
+    // a third copy. Files are content-addressed and checked against the manifest's sha256, so a slow, stale or broken source just
+    // means the next one is used. The manifest is read from Pages first (always current). ?dist=<url> forces one source.
     const onSite = /(^|\.)webroyale\.dev$/.test(location.hostname), JSD = 'https://cdn.jsdelivr.net/gh/ytsodacan/webroyale-site@main/play/dist/', WORKER = API + '/_git/dist/';
+    const PAGES = onSite ? new URL('dist/', location.href).href : 'https://webroyale.dev/play/dist/';
     const forced = new URLSearchParams(location.search).get('dist');
-    const bases = forced ? [forced] : onSite ? [new URL('dist/', location.href).href, JSD, WORKER] : ['https://webroyale.dev/play/dist/', JSD, WORKER];
+    const bases = forced ? [forced] : [JSD, PAGES, WORKER], mbases = forced ? [forced] : [PAGES, JSD, WORKER];
     const say = (t, pct) => { text.textContent = t; if (pct == null) toast.classList.add('indet'); else { toast.classList.remove('indet'); bar.style.width = pct + '%'; } };
     const gunzip = (ab) => new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
     const hex = async (ab) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ab)), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -508,17 +510,17 @@
     try { sessionStorage.removeItem('coiReload'); } catch (e) {}
     try {
       say('Checking for updates…');
-      let man = null, order = bases.slice();
-      for (let i = 0; i < bases.length && !man; i++) {
+      let man = null; const order = bases.slice();
+      for (let i = 0; i < mbases.length && !man; i++) {
         try { const ac = new AbortController(), t = setTimeout(() => ac.abort(), 8000);
-          const mr = await fetch(bases[i] + 'manifest.json?t=' + Date.now(), { cache: 'no-store', signal: ac.signal }); clearTimeout(t);
-          if (!mr.ok) throw new Error('manifest ' + mr.status); man = await mr.json(); order = [bases[i]].concat(bases.filter((_, j) => j !== i)); }
-        catch (e) { console.warn('game files: ' + bases[i] + ' unavailable (' + e.message + ')'); }
+          const mr = await fetch(mbases[i] + 'manifest.json?t=' + Date.now(), { cache: 'no-store', signal: ac.signal }); clearTimeout(t);
+          if (!mr.ok) throw new Error('manifest ' + mr.status); man = await mr.json(); }
+        catch (e) { console.warn('game files: manifest from ' + mbases[i] + ' unavailable (' + e.message + ')'); }
       }
       if (!man) throw new Error('no game file source is reachable');
       let cache = null; try { cache = await caches.open('webroyale-dist'); } catch (e) {}
       const url = (f) => location.origin + '/__dist/' + f.name + '?h=' + f.sha256.slice(0, 16);   // cache key (same whichever source served it)
-      const real = (f, b) => b + f.name + '?h=' + f.sha256.slice(0, 16);
+      const real = (f, b) => b + (f.path || f.name) + '?h=' + f.sha256.slice(0, 16);
       const have = new Set(); const data = new Map();
       if (cache) { for (const f of man.files) if (await cache.match(url(f))) have.add(f.name);
         for (const req of await cache.keys()) if (!man.files.some((f) => new URL(url(f), location.href).href === req.url)) await cache.delete(req); }   // drop old versions
@@ -527,20 +529,24 @@
       let doneFiles = 0;
       const progress = () => say('Downloading game files… ' + Math.floor(100 * got / total) + '% (' + doneFiles + '/' + todo.length + ' files, ' + (total / 1048576).toFixed(0) + ' MB, first visit only)', 100 * got / total);
       const fetchOnce = async (f, b) => {
-        // A transfer that makes no progress for 20 s is aborted so it can be retried.
-        const ac = new AbortController(); let timer = setTimeout(() => ac.abort(), 20000), mine = 0;
+        // A transfer that makes no progress for 20 s, or crawls (< ~120 KB/s over 5 s), is aborted so the next source can be tried.
+        const ac = new AbortController(); let timer = setTimeout(() => ac.abort(), 20000), mine = 0, slow = false;
+        const t0 = Date.now(); let mark = [t0, 0];
+        const watch = setInterval(() => { const now = Date.now(); if (now - mark[0] >= 5000) { if ((mine - mark[1]) / ((now - mark[0]) / 1000) < 120 * 1024) { slow = true; ac.abort(); } mark = [now, mine]; } }, 1000);
         try {
-          const r = await fetch(real(f, b), { signal: ac.signal, cache: 'reload' }); if (!r.ok) throw new Error(f.name + ' ' + r.status);   // our own Cache Storage is the cache; skip the HTTP cache if (!r.ok) throw new Error(f.name + ' ' + r.status);
+          const r = await fetch(real(f, b), { signal: ac.signal, cache: 'reload' }); if (!r.ok) throw new Error(f.name + ' ' + r.status);
           const parts = []; const rd = r.body.getReader();
           for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); mine += value.length; got += value.length; clearTimeout(timer); timer = setTimeout(() => ac.abort(), 20000); progress(); }
           return await new Blob(parts).arrayBuffer();
-        } catch (e) { got -= mine; throw e; } finally { clearTimeout(timer); }
+        } catch (e) { got -= mine; if (slow) throw new Error(f.name + ' too slow from ' + new URL(b, location.href).host); throw e; } finally { clearTimeout(timer); clearInterval(watch); }
       };
       const fetchOne = async (f) => {
         let ab, err;
         for (let attempt = 0; attempt < order.length * 2 && !ab; attempt++) {
-          try { const got1 = await fetchOnce(f, order[attempt % order.length]); if ((await hex(got1)) !== f.sha256) throw new Error(f.name + ' failed its checksum'); ab = got1; }
-          catch (e) { err = e; await new Promise((r) => setTimeout(r, 300 * (attempt + 1))); }
+          const b = order[0];
+          try { const got1 = await fetchOnce(f, b); if ((await hex(got1)) !== f.sha256) throw new Error(f.name + ' failed its checksum'); ab = got1; }
+          catch (e) { err = e; console.warn('game files: ' + e.message); if (order[0] === b) order.push(order.shift());   // a failing/slow source goes to the back for every file
+            await new Promise((r) => setTimeout(r, 300)); }
         }
         if (!ab) throw err;
         if (cache) try { await cache.put(url(f), new Response(ab)); } catch (e) {}

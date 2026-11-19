@@ -1,11 +1,12 @@
 {
  "version": "b58da0d306e7c8da",
- "built": 1795079525,
+ "built": 1795079976,
  "assetFiles": 824,
  "assetBytes": 92009076,
  "files": [
   {
    "name": "libg.wasm.gz",
+   "path": "libg.wasm.a7ccee59.gz",
    "sha256": "a7ccee5911f5d928ebc186a98a33717a5038b83ab917efb0136aedc67657eb98",
    "size": 7764598,
    "raw": 36257757,
@@ -13,6 +14,7 @@
   },
   {
    "name": "libg.data.gz",
+   "path": "libg.data.70addc11.gz",
    "sha256": "70addc11c6eb048bedd995bab3e5833aa8843505563bec565d8d357a329987e3",
    "size": 3015971,
    "raw": 9175040,
@@ -20,6 +22,7 @@
   },
   {
    "name": "libg.js",
+   "path": "libg.js",
    "sha256": "c7db585c0acfb0f6af75e9629c672d06ee730e01019157c5d1eba8bf20322a67",
    "size": 264646,
    "raw": 264646,
@@ -27,6 +30,7 @@
   },
   {
    "name": "assets.000.gz",
+   "path": "assets.000.92f7d796.gz",
    "sha256": "92f7d796339a234bfabb24125af0a54e00c3ee0aead7efd045a038316e6bdc45",
    "size": 13415331,
    "raw": 14680064,
@@ -34,6 +38,7 @@
   },
   {
    "name": "assets.001.gz",
+   "path": "assets.001.fbc9ebc3.gz",
    "sha256": "fbc9ebc32a4983f06f6abe4b066d712625041462b291e05a60cd281522a73680",
    "size": 14684558,
    "raw": 14680064,
@@ -41,6 +46,7 @@
   },
   {
    "name": "assets.002.gz",
+   "path": "assets.002.7f59d5e0.gz",
    "sha256": "7f59d5e0264cb6961cc1a38df37d11392984db0e9484a07272ffdfc03cb04b26",
    "size": 14684518,
    "raw": 14680064,
@@ -48,6 +54,7 @@
   },
   {
    "name": "assets.003.gz",
+   "path": "assets.003.6ad082f6.gz",
    "sha256": "6ad082f6f1a4b90d71c86bbe35e0641770c0a76cd8e6f48bde76893438c1e97f",
    "size": 14684562,
    "raw": 14680064,
@@ -55,6 +62,7 @@
   },
   {
    "name": "assets.004.gz",
+   "path": "assets.004.6a9b15a6.gz",
    "sha256": "6a9b15a60bba65f15cf3eab244d32a4df87fe8d9a7d98d8acfc02fdc3c88ef3d",
    "size": 14274275,
    "raw": 14680064,
@@ -62,6 +70,7 @@
   },
   {
    "name": "assets.005.gz",
+   "path": "assets.005.d725e385.gz",
    "sha256": "d725e3859cdb16790945cfd405cf20b65d50e062ca9cc62aec00755d42bdd86c",
    "size": 13031418,
    "raw": 14680064,
@@ -69,6 +78,7 @@
   },
   {
    "name": "assets.006.gz",
+   "path": "assets.006.b94b7a1f.gz",
    "sha256": "b94b7a1ffa87088a6419a6572aac49243e409cac1c2f7e07e48903efb8ee3841",
    "size": 1997050,
    "raw": 3928692,
