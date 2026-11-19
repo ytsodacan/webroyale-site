@@ -47,6 +47,7 @@
   @media (max-width:640px) { .nav .menu { display:none; } }
 </style>
 <script src="config.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 <button id="fs" title="Fullscreen" aria-label="Fullscreen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -98,14 +99,20 @@
         '<input name="p" type="password" placeholder="Password" autocomplete="current-password" style="' + inp + '">' +
         '<div style="display:flex;gap:8px"><button type="submit" style="flex:1;padding:10px;border:0;border-radius:8px;background:#3b82f6;color:#fff;font-weight:600;cursor:pointer">Login</button>' +
         '<button type="button" id="signin-reg" style="flex:1;padding:10px;border:1px solid #3b82f6;border-radius:8px;background:transparent;color:#7db3ff;font-weight:600;cursor:pointer">Register</button></div>' +
+        '<div id="signin-cf" style="display:flex;justify-content:center;min-height:65px"></div>' +
         '<div id="signin-msg" style="color:#f87171;min-height:1.2em;text-align:center"></div>';
+      // Cloudflare Turnstile (same widget as the site's sign-in page); the box needs its token to log in or register.
+      const drawCf = () => { if (!window.turnstile) return setTimeout(drawCf, 300); if (!box.cfId) box.cfId = window.turnstile.render('#signin-cf', { sitekey: '0x4AAAAAAGIdp0W5ZNzVCk9A', theme: 'dark' }); };
+      drawCf();
       const go = async (path, busy) => {
         const m = document.getElementById('signin-msg'); m.style.color = '#f87171';
         if (!box.u.value.trim() || !box.p.value) { m.textContent = 'Enter a username and password'; return; }
+        const tok = box.cfId !== undefined && window.turnstile ? window.turnstile.getResponse(box.cfId) : '';
+        if (!tok) { m.textContent = box.cfId ? 'Please complete the check first' : 'The check is still loading. Try again in a moment.'; return; }
         m.style.color = '#7a8599'; m.textContent = busy;
         try {
-          const r = await fetch(bridgeHttp() + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: box.u.value.trim(), password: box.p.value }) });
-          const j = await r.json(); if (!r.ok) { m.style.color = '#f87171'; m.textContent = j.error || 'Something went wrong'; return; }
+          const r = await fetch(bridgeHttp() + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: box.u.value.trim(), password: box.p.value, turnstile: tok }) });
+          const j = await r.json(); if (!r.ok) { m.style.color = '#f87171'; m.textContent = j.error || 'Something went wrong'; try { window.turnstile.reset(box.cfId); } catch (e) {} return; }
           try { localStorage.setItem('webroyale_sillyos_token', j.token); } catch (err) {}
           location.reload();
         } catch (err) { m.style.color = '#f87171'; m.textContent = 'Could not reach the server'; }

@@ -31,7 +31,7 @@
     <div class="field"><label for="u">Username</label><input id="u" name="u" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="32" required></div>
     <div class="field"><label for="p">Password</label><input id="p" name="p" type="password" autocomplete="current-password" required></div>
     <div class="field" id="p2box" hidden><label for="p2">Confirm password</label><input id="p2" type="password" autocomplete="new-password"></div>
-    <div id="cf" hidden style="margin:0 0 14px;min-height:65px"></div>
+    <div id="cf" style="display:flex;justify-content:center;margin:4px 0 14px;min-height:65px"></div>
     <button class="btn gold" id="go" type="submit">Log in</button>
     <p class="msg" id="msg" role="status"></p>
     <p class="hint">Your WebRoyale account is a SillyOS account: the same username and password work on both. Your in-game name is your username.</p>
@@ -58,7 +58,7 @@
     mode = m; const su = m === 'signup';
     $('tLogin').setAttribute('aria-selected', !su); $('tSignup').setAttribute('aria-selected', su);
     $('banner').textContent = su ? 'Sign up' : 'Login'; $('go').textContent = su ? 'Create account' : 'Login';
-    $('p2box').hidden = !su; $('cf').hidden = !su; if (su) renderCf(); $('p').autocomplete = su ? 'new-password' : 'current-password';
+    $('p2box').hidden = !su; renderCf(); $('p').autocomplete = su ? 'new-password' : 'current-password';
     document.title = (su ? 'Sign up' : 'Login') + ' – WebRoyale';
     history.replaceState(null, '', (su ? '/signup/' : '/login/') + location.search);
   }
@@ -83,16 +83,13 @@
     if (mode === 'signup' && p !== $('p2').value) return err('The passwords don’t match');
     $('go').disabled = true; msg.className = 'msg'; msg.textContent = mode === 'signup' ? 'Creating your account…' : 'Logging in…';
     try {
-      let body = { username: u, password: p };
-      if (mode === 'signup') {
-        const tok = window.turnstile && cfId !== null ? window.turnstile.getResponse(cfId) : '';
-        if (!tok) { $('go').disabled = false; return err(cfId === null ? 'The check is still loading. Try again in a moment.' : 'Please complete the check first'); }
-        msg.className = 'msg'; msg.textContent = 'Creating your account…';
-        body.turnstile = tok; body.pow = await solvePow();
-      }
+      const tok = window.turnstile && cfId !== null ? window.turnstile.getResponse(cfId) : '';
+      if (!tok) { $('go').disabled = false; return err(cfId === null ? 'The check is still loading. Try again in a moment.' : 'Please complete the check first'); }
+      let body = { username: u, password: p, turnstile: tok };
+      if (mode === 'signup') { msg.className = 'msg'; msg.textContent = 'Creating your account…'; body.pow = await solvePow(); }
       const r = await WR.bridge(mode === 'signup' ? '/register' : '/login', body);
       const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j.token) { $('go').disabled = false; if (mode === 'signup' && window.turnstile && cfId !== null) window.turnstile.reset(cfId); return err(j.error || 'Something went wrong'); }
+      if (!r.ok || !j.token) { $('go').disabled = false; if (window.turnstile && cfId !== null) window.turnstile.reset(cfId); return err(j.error || 'Something went wrong'); }
       WR.setToken(j.token); WR.setUser(u.toLowerCase());
       msg.className = 'msg ok'; msg.textContent = 'Welcome, ' + u + '!';
       location.replace(next);
