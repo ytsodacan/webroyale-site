@@ -103,18 +103,26 @@
     try { localStorage.setItem('webroyale_silly_user', j.user); } catch (e) {}
     return true;
   }
+  // Crash diagnostics: report errors (capped) to the bridge log so they can be read server-side.
+  var dbgN = 0;
+  function dbg(k, v) {
+    if (dbgN > 300 || API || (k === 'err' && /^(JAVA |image loaded|init|JNI_|createGameMain|surface|start done)/.test(v)) || dbgN++ < 0) return;
+    try { fetch('/bridge/dbg?' + k + '=' + encodeURIComponent(String(v).slice(0, 400)), { keepalive: true, mode: 'no-cors' }).catch(() => {}); } catch (e) {}
+  }
+  window.addEventListener('error', (e) => dbg('jserr', (e.message || '') + ' @' + (e.filename || '') + ':' + (e.lineno || '')));
+  window.addEventListener('unhandledrejection', (e) => dbg('rej', e.reason && (e.reason.stack || e.reason.message || e.reason)));
   var Module = {
     bridgeUrl: API ? API.replace(/^http/, 'ws') + '/bridge' : undefined,
     locateFile: (n) => (window.__blobs && window.__blobs[n]) || n,
     fetchTicket: async () => { const j = await getAccount(); return j ? j.ticket : ''; },
     canvas: document.getElementById('canvas'),
-    print: log, printErr: log,
+    print: log, printErr: (t) => { log(t); dbg('err', t); },
     setStatus: (t) => {
       statusEl.textContent = t || 'Running';
       // The toast is driven by loadDist() while files download; once the game is running it goes away.
       if (!t) document.getElementById('toast').classList.add('done');
     },
-    onAbort: (w) => { statusEl.textContent = 'Stopped: ' + w; },
+    onAbort: (w) => { dbg('abort', w); statusEl.textContent = 'Stopped: ' + w; },
     // Persistence: the game's writable files (prefs.txt with the account id/token, settings, caches)
     // live under /fs. Back it with IndexedDB: load before main() runs, then flush every few seconds
     // and whenever the tab is hidden or closed.
@@ -399,6 +407,12 @@
       if ('serviceWorker' in navigator && window.isSecureContext) {
         try { await navigator.serviceWorker.register('coi-sw.js'); await navigator.serviceWorker.ready;
           if (!sessionStorage.getItem('coiReload')) { sessionStorage.setItem('coiReload', '1'); location.reload(); return; } } catch (e) { console.warn(e); }
+      }
+      if (window.top !== window) {   // framed by a page that is not cross-origin isolated: threads (SharedArrayBuffer) are unavailable
+        say('The game cannot run inside this frame (the embedding page is not cross-origin isolated).'); toast.classList.remove('indet');
+        const a = document.createElement('a'); a.href = location.href; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Open the game in a new tab';
+        a.style.cssText = 'display:inline-block;margin-top:10px;padding:8px 14px;border-radius:8px;background:#3b82f6;color:#fff;text-decoration:none;font-weight:600';
+        text.appendChild(document.createElement('br')); text.appendChild(a); return;
       }
       say('This browser could not enable the features the game needs (try Chrome, Edge or Firefox, and allow site data).'); toast.classList.remove('indet'); return;
     }
