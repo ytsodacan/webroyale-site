@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account – WebRoyale</title>
+<meta name="description" content="Your WebRoyale account: trophies, level, gold and gems.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#1b4f9c">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/config.js"></script>
+<script src="/assets/site.js"></script>
+<script>if (!WR.token()) location.replace('/login/?next=/account/');</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand outline" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 50 5 18l15 13L32 8l12 23 15-13-3 32z" fill="#ffd23f" stroke="#0b1630" stroke-width="4" stroke-linejoin="round"/><rect x="7" y="48" width="50" height="9" rx="3" fill="#f5a400" stroke="#0b1630" stroke-width="4"/><circle cx="32" cy="34" r="5" fill="#ff5a5a" stroke="#0b1630" stroke-width="3"/></svg>WebRoyale</a>
+  <span class="spacer"></span>
+  <a class="btn sm gold" href="/play/">Play</a>
+</div></header>
+<main class="center">
+  <div class="card">
+    <div class="banner">My Account</div>
+    <h1 class="pname outline" id="name">…</h1>
+    <p class="ptag" id="tag">Loading your profile…</p>
+    <div class="stats" id="stats" hidden>
+      <div class="stat trophy"><b id="sTrophies">0</b><span>Trophies</span></div>
+      <div class="stat"><b id="sLevel">1</b><span>King level</span></div>
+      <div class="stat gold"><b id="sGold">0</b><span>Gold</span></div>
+      <div class="stat gem"><b id="sGems">0</b><span>Gems</span></div>
+      <div class="stat"><b id="sCrowns">0</b><span>Crowns</span></div>
+      <div class="stat"><b id="sArena">1</b><span>Arena</span></div>
+    </div>
+    <p class="msg err" id="err"></p>
+    <div class="row" style="margin-top:6px">
+      <a class="btn gold" href="/play/">Play</a>
+      <button class="btn red" id="out" type="button">Log out</button>
+    </div>
+    <p class="hint" id="acct"></p>
+  </div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id), fmt = (n) => Number(n || 0).toLocaleString();
+  $('out').onclick = () => { WR.signOut(); location.href = '/'; };
+  (async () => {
+    let r, j;
+    try { r = await fetch(WR.API + '/admin/api/profile', { headers: { Authorization: 'Bearer ' + WR.token() } }); j = await r.json(); }
+    catch (e) { $('tag').textContent = ''; $('err').textContent = 'Could not reach the server. Try again in a moment.'; $('name').textContent = WR.user() || 'Account'; return; }
+    if (r.status === 401) { WR.signOut(); location.replace('/login/?expired=1&next=/account/'); return; }
+    if (!r.ok) { $('err').textContent = j.error || 'Something went wrong'; return; }
+    WR.setUser(j.user);
+    $('acct').textContent = 'Signed in as ' + j.user;
+    const p = j.player;
+    if (!p) { $('name').textContent = j.user; $('tag').textContent = 'No battles yet. Press Play to create your profile!'; return; }
+    $('name').textContent = p.name; $('tag').textContent = p.tag + (p.clan ? ' · ' + p.clan : '');
+    $('sTrophies').textContent = fmt(p.trophies); $('sLevel').textContent = p.level; $('sGold').textContent = fmt(p.gold);
+    $('sGems').textContent = fmt(p.gems); $('sCrowns').textContent = fmt(p.crowns); $('sArena').textContent = p.arena || 1;
+    $('stats').hidden = false;
+    if (p.banned) $('err').textContent = 'This account is banned' + (p.banReason ? ': ' + p.banReason : '.');
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign up – WebRoyale</title>
+<meta name="description" content="Create a free WebRoyale account to play OG Clash Royale in your browser.">
+<link rel="canonical" href="https://webroyale.dev/signup/">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#1b4f9c">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand outline" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 50 5 18l15 13L32 8l12 23 15-13-3 32z" fill="#ffd23f" stroke="#0b1630" stroke-width="4" stroke-linejoin="round"/><rect x="7" y="48" width="50" height="9" rx="3" fill="#f5a400" stroke="#0b1630" stroke-width="4"/><circle cx="32" cy="34" r="5" fill="#ff5a5a" stroke="#0b1630" stroke-width="3"/></svg>WebRoyale</a>
+  <span class="spacer"></span>
+  <a class="btn sm gold" href="/play/">Play</a>
+</div></header>
+<main class="center">
+  <form class="card" id="f" novalidate>
+    <div class="banner" id="banner">Sign up</div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tLogin" aria-selected="false">Login</button>
+      <button type="button" role="tab" id="tSignup" aria-selected="false">Sign up</button>
+    </div>
+    <p class="hint" id="why" style="margin:0 0 14px;display:none">Log in to play. It only takes a moment.</p>
+    <div class="field"><label for="u">Username</label><input id="u" name="u" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="32" required></div>
+    <div class="field"><label for="p">Password</label><input id="p" name="p" type="password" autocomplete="current-password" required></div>
+    <div class="field" id="p2box" hidden><label for="p2">Confirm password</label><input id="p2" type="password" autocomplete="new-password"></div>
+    <button class="btn gold" id="go" type="submit">Login</button>
+    <p class="msg" id="msg" role="status"></p>
+    <p class="hint">Your WebRoyale account is a SillyOS account: the same username and password work on both. Your in-game name is your username.</p>
+  </form>
+</main>
+<script src="/config.js"></script>
+<script src="/assets/site.js"></script>
+<script>
+  const qs = new URLSearchParams(location.search), next = WR.safeNext(qs.get('next'));
+  let mode = location.pathname.startsWith('/signup') ? 'signup' : 'login';
+  const $ = (id) => document.getElementById(id), msg = $('msg');
+  if (qs.get('next') === '/play/') $('why').style.display = '';
+  if (qs.has('expired')) { msg.className = 'msg err'; msg.textContent = 'Your session expired. Please log in again.'; }
+  if (WR.token() && !qs.has('expired')) location.replace(next);
+  function setMode(m) {
+    mode = m; const su = m === 'signup';
+    $('tLogin').setAttribute('aria-selected', !su); $('tSignup').setAttribute('aria-selected', su);
+    $('banner').textContent = su ? 'Sign up' : 'Login'; $('go').textContent = su ? 'Create account' : 'Login';
+    $('p2box').hidden = !su; $('p').autocomplete = su ? 'new-password' : 'current-password';
+    document.title = (su ? 'Sign up' : 'Login') + ' – WebRoyale';
+    history.replaceState(null, '', (su ? '/signup/' : '/login/') + location.search);
+  }
+  $('tLogin').onclick = () => setMode('login'); $('tSignup').onclick = () => setMode('signup');
+  setMode(mode);
+  $('f').onsubmit = async (e) => {
+    e.preventDefault();
+    const u = $('u').value.trim(), p = $('p').value;
+    const err = (t) => { msg.className = 'msg err'; msg.textContent = t; };
+    if (!u || !p) return err('Enter a username and password');
+    if (mode === 'signup' && p !== $('p2').value) return err('The passwords don’t match');
+    $('go').disabled = true; msg.className = 'msg'; msg.textContent = mode === 'signup' ? 'Creating your account…' : 'Logging in…';
+    try {
+      const r = await WR.bridge(mode === 'signup' ? '/register' : '/login', { username: u, password: p });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.token) { $('go').disabled = false; return err(j.error || 'Something went wrong'); }
+      WR.setToken(j.token); WR.setUser(u.toLowerCase());
+      msg.className = 'msg ok'; msg.textContent = 'Welcome, ' + u + '!';
+      location.replace(next);
+    } catch (x) { $('go').disabled = false; err('Could not reach the server. Try again.'); }
+  };
+</script>
+</body>
+</html>
