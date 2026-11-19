@@ -478,7 +478,8 @@
   // its hash changes. Without Cache Storage (private window) it simply downloads each visit.
   (async function loadDist() {
     const toast = document.getElementById('toast'), text = document.getElementById('toastText'), bar = document.getElementById('toastBar');
-    const base = new URLSearchParams(location.search).get('dist') || API + '/_git/dist/';
+    // Game files (wasm + assets, ~93 MB) are served by GitHub Pages next to the site: /play/dist/. The Worker host keeps its own copy (pthread workers need a same-origin glue script).
+    const base = new URLSearchParams(location.search).get('dist') || (/(^|\.)webroyale\.dev$/.test(location.hostname) ? new URL('dist/', location.href).href : API + '/_git/dist/');
     const say = (t, pct) => { text.textContent = t; if (pct == null) toast.classList.add('indet'); else { toast.classList.remove('indet'); bar.style.width = pct + '%'; } };
     const gunzip = (ab) => new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
     const hex = async (ab) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ab)), (b) => b.toString(16).padStart(2, '0')).join('');

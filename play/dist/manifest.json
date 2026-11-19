@@ -1,0 +1,57 @@
+{
+ "version": "10c1ec004c64f0c5",
+ "built": 1795079295,
+ "assetFiles": 824,
+ "assetBytes": 92009076,
+ "files": [
+  {
+   "name": "libg.wasm.gz",
+   "sha256": "a7ccee5911f5d928ebc186a98a33717a5038b83ab917efb0136aedc67657eb98",
+   "size": 7764598,
+   "raw": 36257757,
+   "kind": "wasm"
+  },
+  {
+   "name": "libg.data.gz",
+   "sha256": "70addc11c6eb048bedd995bab3e5833aa8843505563bec565d8d357a329987e3",
+   "size": 3015971,
+   "raw": 9175040,
+   "kind": "data"
+  },
+  {
+   "name": "libg.js",
+   "sha256": "c7db585c0acfb0f6af75e9629c672d06ee730e01019157c5d1eba8bf20322a67",
+   "size": 264646,
+   "raw": 264646,
+   "kind": "glue"
+  },
+  {
+   "name": "assets.000.gz",
+   "sha256": "d6bff9603b2b35607934d74dd1d4eb744e1752b992bdc81cd7df7106463719f1",
+   "size": 23904291,
+   "raw": 25165824,
+   "kind": "assets"
+  },
+  {
+   "name": "assets.001.gz",
+   "sha256": "4d9e3b4c73813e22761f258a7a6451398c0eb1882ddd5197de68528015fb3779",
+   "size": 25173484,
+   "raw": 25165824,
+   "kind": "assets"
+  },
+  {
+   "name": "assets.002.gz",
+   "sha256": "1c418242800bab7b55ebb21427415272d7cdb26e738867e62b3ca702fc6bcbb1",
+   "size": 24536562,
+   "raw": 25165824,
+   "kind": "assets"
+  },
+  {
+   "name": "assets.003.gz",
+   "sha256": "3629443184adffb454ed72497afcad6d183a54404a34936c8654204abc59206c",
+   "size": 13157500,
+   "raw": 16511604,
+   "kind": "assets"
+  }
+ ]
+}
