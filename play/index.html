@@ -478,8 +478,12 @@
   // its hash changes. Without Cache Storage (private window) it simply downloads each visit.
   (async function loadDist() {
     const toast = document.getElementById('toast'), text = document.getElementById('toastText'), bar = document.getElementById('toastBar');
-    // Game files (wasm + assets, ~93 MB) are served by GitHub Pages next to the site: /play/dist/. The Worker host keeps its own copy (pthread workers need a same-origin glue script).
-    const base = new URLSearchParams(location.search).get('dist') || (/(^|\.)webroyale\.dev$/.test(location.hostname) ? new URL('dist/', location.href).href : API + '/_git/dist/');
+    // Game files (wasm + assets, ~93 MB), tried in this order: GitHub Pages (webroyale.dev/play/dist), jsDelivr (a mirror of the
+    // same GitHub repo), then the Worker's own copy. Every file is checked against the manifest's sha256, so a stale or broken
+    // mirror just means the next source is used. ?dist=<url> forces one source.
+    const onSite = /(^|\.)webroyale\.dev$/.test(location.hostname), JSD = 'https://cdn.jsdelivr.net/gh/ytsodacan/webroyale-site@main/play/dist/', WORKER = API + '/_git/dist/';
+    const forced = new URLSearchParams(location.search).get('dist');
+    const bases = forced ? [forced] : onSite ? [new URL('dist/', location.href).href, JSD, WORKER] : ['https://webroyale.dev/play/dist/', JSD, WORKER];
     const say = (t, pct) => { text.textContent = t; if (pct == null) toast.classList.add('indet'); else { toast.classList.remove('indet'); bar.style.width = pct + '%'; } };
     const gunzip = (ab) => new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
     const hex = async (ab) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ab)), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -504,10 +508,17 @@
     try { sessionStorage.removeItem('coiReload'); } catch (e) {}
     try {
       say('Checking for updates…');
-      const mr = await fetch(base + 'manifest.json', { cache: 'no-store' }); if (!mr.ok) throw new Error('manifest ' + mr.status);
-      const man = await mr.json();
+      let man = null, order = bases.slice();
+      for (let i = 0; i < bases.length && !man; i++) {
+        try { const ac = new AbortController(), t = setTimeout(() => ac.abort(), 8000);
+          const mr = await fetch(bases[i] + 'manifest.json?t=' + Date.now(), { cache: 'no-store', signal: ac.signal }); clearTimeout(t);
+          if (!mr.ok) throw new Error('manifest ' + mr.status); man = await mr.json(); order = [bases[i]].concat(bases.filter((_, j) => j !== i)); }
+        catch (e) { console.warn('game files: ' + bases[i] + ' unavailable (' + e.message + ')'); }
+      }
+      if (!man) throw new Error('no game file source is reachable');
       let cache = null; try { cache = await caches.open('webroyale-dist'); } catch (e) {}
-      const url = (f) => base + f.name + '?h=' + f.sha256.slice(0, 16);
+      const url = (f) => location.origin + '/__dist/' + f.name + '?h=' + f.sha256.slice(0, 16);   // cache key (same whichever source served it)
+      const real = (f, b) => b + f.name + '?h=' + f.sha256.slice(0, 16);
       const have = new Set(); const data = new Map();
       if (cache) { for (const f of man.files) if (await cache.match(url(f))) have.add(f.name);
         for (const req of await cache.keys()) if (!man.files.some((f) => new URL(url(f), location.href).href === req.url)) await cache.delete(req); }   // drop old versions
@@ -515,11 +526,11 @@
       if (todo.length) say('Downloading game files… 0% (' + (total / 1048576).toFixed(0) + ' MB, first visit only)', 0);
       let doneFiles = 0;
       const progress = () => say('Downloading game files… ' + Math.floor(100 * got / total) + '% (' + doneFiles + '/' + todo.length + ' files, ' + (total / 1048576).toFixed(0) + ' MB, first visit only)', 100 * got / total);
-      const fetchOnce = async (f) => {
+      const fetchOnce = async (f, b) => {
         // A transfer that makes no progress for 20 s is aborted so it can be retried.
         const ac = new AbortController(); let timer = setTimeout(() => ac.abort(), 20000), mine = 0;
         try {
-          const r = await fetch(url(f), { signal: ac.signal, cache: 'reload' });   // our own Cache Storage is the cache; skip the HTTP cache if (!r.ok) throw new Error(f.name + ' ' + r.status);
+          const r = await fetch(real(f, b), { signal: ac.signal, cache: 'reload' }); if (!r.ok) throw new Error(f.name + ' ' + r.status);   // our own Cache Storage is the cache; skip the HTTP cache if (!r.ok) throw new Error(f.name + ' ' + r.status);
           const parts = []; const rd = r.body.getReader();
           for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); mine += value.length; got += value.length; clearTimeout(timer); timer = setTimeout(() => ac.abort(), 20000); progress(); }
           return await new Blob(parts).arrayBuffer();
@@ -527,9 +538,11 @@
       };
       const fetchOne = async (f) => {
         let ab, err;
-        for (let attempt = 0; attempt < 4 && !ab; attempt++) { try { ab = await fetchOnce(f); } catch (e) { err = e; await new Promise((r) => setTimeout(r, 500 * (attempt + 1))); } }
+        for (let attempt = 0; attempt < order.length * 2 && !ab; attempt++) {
+          try { const got1 = await fetchOnce(f, order[attempt % order.length]); if ((await hex(got1)) !== f.sha256) throw new Error(f.name + ' failed its checksum'); ab = got1; }
+          catch (e) { err = e; await new Promise((r) => setTimeout(r, 300 * (attempt + 1))); }
+        }
         if (!ab) throw err;
-        if ((await hex(ab)) !== f.sha256) throw new Error(f.name + ' failed its checksum');
         if (cache) try { await cache.put(url(f), new Response(ab)); } catch (e) {}
         data.set(f.name, ab); doneFiles++; progress();
       };
@@ -553,12 +566,9 @@
       const glue = man.files.find((f) => f.kind === 'glue');
       // Cross-site (GitHub Pages): the glue script has to be same-origin (pthread workers can't load a
       // cross-origin script), so it ships with the page; make sure it matches the wasm that was just fetched.
-      let glueUrl = url(glue);
-      if (API) {
-        const lr = await fetch('libg.js', { cache: 'no-cache' });
-        if (!lr.ok || (await hex(await lr.arrayBuffer())) !== glue.sha256) throw new Error('this page is a version behind the game files; reload in a minute');
-        glueUrl = 'libg.js?h=' + glue.sha256.slice(0, 16);
-      }
+      const localGlue = API ? 'libg.js' : WORKER + 'libg.js', glueUrl = localGlue + '?h=' + glue.sha256.slice(0, 16);
+      { const lr = await fetch(localGlue, { cache: 'no-cache' });
+        if (!lr.ok || (await hex(await lr.arrayBuffer())) !== glue.sha256) throw new Error('this page is a version behind the game files; reload in a minute'); }
       const sc = document.createElement('script'); sc.src = glueUrl; document.body.appendChild(sc);
     } catch (e) { console.error(e); say('Could not load the game files: ' + e.message); toast.classList.remove('indet'); }
   })();
