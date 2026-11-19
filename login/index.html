@@ -55,6 +55,17 @@
   }
   $('tLogin').onclick = () => setMode('login'); $('tSignup').onclick = () => setMode('signup');
   setMode(mode);
+  // Signup check: find n so that SHA-256("<challenge>:<n>") starts with the required number of zero bits (see bridge POW_BITS).
+  async function solvePow() {
+    const ch = await (await fetch(WR.API + '/bridge/register/challenge', { cache: 'no-store' })).json();
+    const enc = new TextEncoder(), full = Math.floor(ch.d / 8), rest = ch.d % 8;
+    for (let n = 0; ; n++) {
+      const h = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(ch.c + ':' + n)));
+      let ok = true; for (let i = 0; i < full && ok; i++) if (h[i] !== 0) ok = false;
+      if (ok && rest && (h[full] >> (8 - rest)) !== 0) ok = false;
+      if (ok) return { c: ch.c, t: ch.t, s: ch.s, n: String(n) };
+    }
+  }
   $('f').onsubmit = async (e) => {
     e.preventDefault();
     const u = $('u').value.trim(), p = $('p').value;
@@ -63,7 +74,9 @@
     if (mode === 'signup' && p !== $('p2').value) return err('The passwords don’t match');
     $('go').disabled = true; msg.className = 'msg'; msg.textContent = mode === 'signup' ? 'Creating your account…' : 'Logging in…';
     try {
-      const r = await WR.bridge(mode === 'signup' ? '/register' : '/login', { username: u, password: p });
+      let body = { username: u, password: p };
+      if (mode === 'signup') { msg.className = 'msg'; msg.textContent = 'Checking that you are not a bot…'; body.pow = await solvePow(); }
+      const r = await WR.bridge(mode === 'signup' ? '/register' : '/login', body);
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.token) { $('go').disabled = false; return err(j.error || 'Something went wrong'); }
       WR.setToken(j.token); WR.setUser(u.toLowerCase());
