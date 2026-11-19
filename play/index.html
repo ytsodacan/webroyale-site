@@ -485,14 +485,11 @@
   // its hash changes. Without Cache Storage (private window) it simply downloads each visit.
   (async function loadDist() {
     const toast = document.getElementById('toast'), text = document.getElementById('toastText'), bar = document.getElementById('toastBar');
-    // Game files (wasm + assets, ~93 MB) live in the GitHub repo that also serves the site. Two ways to read it: jsDelivr (a CDN over
-    // the repo: fast) and GitHub Pages (webroyale.dev/play/dist: authoritative, but GitHub throttles bulk downloads); the Worker keeps
-    // a third copy. Files are content-addressed and checked against the manifest's sha256, so a slow, stale or broken source just
-    // means the next one is used. The manifest is read from Pages first (always current). ?dist=<url> forces one source.
-    const onSite = /(^|\.)webroyale\.dev$/.test(location.hostname), JSD = 'https://cdn.jsdelivr.net/gh/ytsodacan/webroyale-site@main/play/dist/', WORKER = API + '/_git/dist/';
-    const PAGES = onSite ? new URL('dist/', location.href).href : 'https://webroyale.dev/play/dist/';
+    // Game files (wasm + assets, ~93 MB) come from jsDelivr, which serves the GitHub repo that holds them. Files are
+    // content-addressed and checked against the manifest's sha256. ?dist=<url> overrides the source (testing).
+    const JSD = 'https://cdn.jsdelivr.net/gh/ytsodacan/webroyale-site@main/play/dist/', WORKER = API + '/_git/dist/';
     const forced = new URLSearchParams(location.search).get('dist');
-    const bases = forced ? [forced] : [JSD, PAGES, WORKER], mbases = forced ? [forced] : [PAGES, JSD, WORKER];
+    const bases = [forced || JSD], mbases = bases;
     const say = (t, pct) => { text.textContent = t; if (pct == null) toast.classList.add('indet'); else { toast.classList.remove('indet'); bar.style.width = pct + '%'; } };
     const gunzip = (ab) => new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
     const hex = async (ab) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ab)), (b) => b.toString(16).padStart(2, '0')).join('');
