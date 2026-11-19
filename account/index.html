@@ -7,7 +7,7 @@
 <meta name="description" content="Your WebRoyale account: trophies, level, gold and gems.">
 <meta name="robots" content="noindex, follow">
 <meta name="theme-color" content="#0a1628">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" crossorigin>
@@ -18,7 +18,7 @@
 </head>
 <body>
 <header class="nav"><div class="wrap">
-  <a class="brand" href="/"><img src="/favicon.svg" width="28" height="28" alt="">WebRoyale</a>
+  <a class="brand" href="/"><img src="/assets/img/icons/blue.webp" width="38" height="28" alt="">WebRoyale</a>
   <span class="spacer"></span>
   <a class="btn sm gold" href="/play/">Play</a>
 </div></header>
@@ -28,12 +28,12 @@
     <h1 class="pname" id="name">…</h1>
     <p class="ptag" id="tag">Loading your profile…</p>
     <div class="stats" id="stats" hidden>
-      <div class="stat trophy"><b id="sTrophies">0</b><span>Trophies</span></div>
-      <div class="stat"><b id="sLevel">1</b><span>King level</span></div>
-      <div class="stat gold"><b id="sGold">0</b><span>Gold</span></div>
-      <div class="stat gem"><b id="sGems">0</b><span>Gems</span></div>
-      <div class="stat"><b id="sCrowns">0</b><span>Crowns</span></div>
-      <div class="stat"><b id="sArena">1</b><span>Arena</span></div>
+      <div class="stat trophy"><img src="/assets/img/arenas/10.webp" alt=""><b id="sTrophies">0</b><span>Trophies</span></div>
+      <div class="stat"><img src="/assets/img/icons/star.webp" alt=""><b id="sLevel">1</b><span>King level</span></div>
+      <div class="stat gold"><img src="/assets/img/chests/golden.webp" alt=""><b id="sGold">0</b><span>Gold</span></div>
+      <div class="stat gem"><img src="/assets/img/chests/magical.webp" alt=""><b id="sGems">0</b><span>Gems</span></div>
+      <div class="stat"><img src="/assets/img/icons/blue.webp" alt=""><b id="sCrowns">0</b><span>Crowns</span></div>
+      <div class="stat"><img id="iArena" src="/assets/img/arenas/1.webp" alt=""><b id="sArena">1</b><span>Arena</span></div>
     </div>
     <p class="msg err" id="err"></p>
     <div class="row" style="margin-top:6px">
@@ -44,7 +44,7 @@
   </div>
 </main>
 <script>
-  const $ = (id) => document.getElementById(id), fmt = (n) => Number(n || 0).toLocaleString();
+  const $ = (id) => document.getElementById(id), fmt = (n) => { n = Number(n || 0); return n >= 100000 ? new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n) : n.toLocaleString(); };
   $('out').onclick = () => { WR.signOut(); location.href = '/'; };
   (async () => {
     let r, j;
@@ -57,8 +57,8 @@
     const p = j.player;
     if (!p) { $('name').textContent = j.user; $('tag').textContent = 'No battles yet. Press Play to create your profile!'; return; }
     $('name').textContent = p.name; $('tag').textContent = p.tag + (p.clan ? ' · ' + p.clan : '');
-    $('sTrophies').textContent = fmt(p.trophies); $('sLevel').textContent = p.level; $('sGold').textContent = fmt(p.gold);
-    $('sGems').textContent = fmt(p.gems); $('sCrowns').textContent = fmt(p.crowns); $('sArena').textContent = p.arena || 1;
+    $('sTrophies').textContent = fmt(p.trophies); $('sLevel').textContent = p.level; $('sGold').textContent = fmt(p.gold); $('sGold').title = Number(p.gold || 0).toLocaleString();
+    $('sGems').textContent = fmt(p.gems); $('sGems').title = Number(p.gems || 0).toLocaleString(); $('sCrowns').textContent = fmt(p.crowns); $('sArena').textContent = p.arena || 1; $('iArena').src = '/assets/img/arenas/' + Math.min(10, Math.max(1, (p.arena || 0) + 1)) + '.webp';
     $('stats').hidden = false;
     if (p.banned) $('err').textContent = 'This account is banned' + (p.banReason ? ': ' + p.banReason : '.');
   })();

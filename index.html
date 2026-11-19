@@ -9,8 +9,8 @@
 <link rel="canonical" href="https://webroyale.dev/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0a1628">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/og.jpg">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="WebRoyale">
 <meta property="og:url" content="https://webroyale.dev/">
@@ -43,7 +43,13 @@
 <body>
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="/" aria-label="WebRoyale home"><img src="/favicon.svg" width="28" height="28" alt="">WebRoyale</a>
+    <a class="brand" href="/" aria-label="WebRoyale home"><img src="/assets/img/icons/blue.webp" width="40" height="30" alt="">WebRoyale</a>
+    <nav class="menu" aria-label="Sections">
+      <a href="#cards"><img src="/assets/img/icons/cards.webp" width="26" height="26" alt="">Cards</a>
+      <a href="#arenas"><img src="/assets/img/icons/battle.webp" width="26" height="26" alt="">Arenas</a>
+      <a href="#chests"><img src="/assets/img/icons/shop.webp" width="26" height="26" alt="">Chests</a>
+      <a href="#faq"><img src="/assets/img/icons/friends.webp" width="26" height="26" alt="">FAQ</a>
+    </nav>
     <span class="spacer"></span>
     <nav class="links" id="navAuth" aria-label="Account">
       <a class="btn sm ghost" href="/login/">Log in</a>
@@ -60,17 +66,53 @@
     </div>
     <div class="wrap hero-inner">
       <div class="hero-copy">
+        <p class="eyebrow"><img src="/assets/img/icons/blue.webp" width="28" height="21" alt=""> Version 1.9.2 &middot; 2016</p>
         <h1>OG Clash Royale <span>in your Web Browser</span></h1>
         <p class="lead">The original 2016 Clash Royale, free and right in your browser. No download, no install.</p>
         <div class="cta">
-          <a class="btn gold xl" href="/play/">Play</a>
-          <span class="note">Free · Desktop &amp; mobile · Real-time PvP</span>
+          <a class="btn gold xl" href="/play/">Play now</a>
+          <a class="btn blue xl ghostish" href="#cards">Learn more</a>
         </div>
+        <ul class="badges">
+          <li><img src="/assets/img/icons/battle.webp" width="24" height="24" alt="">Real-time PvP</li>
+          <li><img src="/assets/img/icons/star.webp" width="24" height="24" alt="">100% free</li>
+          <li><img src="/assets/img/icons/friends.webp" width="24" height="24" alt="">Desktop &amp; mobile</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <section id="features">
+  <section class="strip" aria-label="Highlights">
+    <div class="wrap strip-grid">
+      <div><img src="/assets/img/icons/battle.webp" width="56" height="56" alt=""><b>1v1 battles</b><span>Live against real players</span></div>
+      <div><img src="/assets/img/icons/cards.webp" width="56" height="56" alt=""><b>Classic cards</b><span>The original 2016 set</span></div>
+      <div><img src="/assets/img/arenas/1.webp" width="56" height="56" alt=""><b>Classic arenas</b><span>Training Camp to Legendary</span></div>
+      <div><img src="/assets/img/chests/golden.webp" width="56" height="56" alt=""><b>Chests</b><span>Wooden to Legendary</span></div>
+    </div>
+  </section>
+
+  <section id="cards">
+    <div class="wrap">
+      <h2>Collect the classics</h2>
+      <p class="sub">Build your deck from the cards that started it all, before years of updates changed the game.</p>
+      <ul class="cardrow">
+        <li><img src="/assets/img/cards/giant.webp" width="220" height="296" loading="lazy" alt="Giant card"><span>Giant</span></li>
+        <li><img src="/assets/img/cards/musketeer.webp" width="220" height="296" loading="lazy" alt="Musketeer card"><span>Musketeer</span></li>
+        <li><img src="/assets/img/cards/prince.webp" width="220" height="296" loading="lazy" alt="Prince card"><span>Prince</span></li>
+        <li><img src="/assets/img/cards/babydragon.webp" width="220" height="296" loading="lazy" alt="Baby Dragon card"><span>Baby Dragon</span></li>
+        <li><img src="/assets/img/cards/hogrider.webp" width="220" height="296" loading="lazy" alt="Hog Rider card"><span>Hog Rider</span></li>
+        <li><img src="/assets/img/cards/pekka.webp" width="220" height="296" loading="lazy" alt="P.E.K.K.A card"><span>P.E.K.K.A</span></li>
+        <li><img src="/assets/img/cards/wizard.webp" width="220" height="296" loading="lazy" alt="Wizard card"><span>Wizard</span></li>
+        <li><img src="/assets/img/cards/valkyrie.webp" width="220" height="296" loading="lazy" alt="Valkyrie card"><span>Valkyrie</span></li>
+        <li><img src="/assets/img/cards/balloon.webp" width="220" height="296" loading="lazy" alt="Balloon card"><span>Balloon</span></li>
+        <li><img src="/assets/img/cards/witch.webp" width="220" height="296" loading="lazy" alt="Witch card"><span>Witch</span></li>
+        <li><img src="/assets/img/cards/princess.webp" width="220" height="296" loading="lazy" alt="Princess card"><span>Princess</span></li>
+        <li><img src="/assets/img/cards/lavahound.webp" width="220" height="296" loading="lazy" alt="Lava Hound card"><span>Lava Hound</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="features" class="alt">
     <div class="wrap">
       <h2>The Clash Royale you remember</h2>
       <p class="sub">Version 1.9.2, the way it was in 2016.</p>
@@ -83,19 +125,53 @@
     </div>
   </section>
 
+  <section id="arenas">
+    <div class="wrap">
+      <h2>Climb the arenas</h2>
+      <p class="sub">Win trophies to unlock new arenas, from Training Camp all the way to the Legendary Arena.</p>
+      <ol class="arenas">
+        <li><img src="/assets/img/arenas/1.webp" width="360" height="360" loading="lazy" alt="Training Camp"><small>Training</small><b>Training Camp</b></li>
+        <li><img src="/assets/img/arenas/2.webp" width="360" height="360" loading="lazy" alt="Goblin Stadium"><small>Arena 1</small><b>Goblin Stadium</b></li>
+        <li><img src="/assets/img/arenas/3.webp" width="360" height="360" loading="lazy" alt="Bone Pit"><small>Arena 2</small><b>Bone Pit</b></li>
+        <li><img src="/assets/img/arenas/4.webp" width="360" height="360" loading="lazy" alt="Barbarian Bowl"><small>Arena 3</small><b>Barbarian Bowl</b></li>
+        <li><img src="/assets/img/arenas/5.webp" width="360" height="360" loading="lazy" alt="P.E.K.K.A's Playhouse"><small>Arena 4</small><b>P.E.K.K.A's Playhouse</b></li>
+        <li><img src="/assets/img/arenas/6.webp" width="360" height="360" loading="lazy" alt="Spell Valley"><small>Arena 5</small><b>Spell Valley</b></li>
+        <li><img src="/assets/img/arenas/7.webp" width="360" height="360" loading="lazy" alt="Builder's Workshop"><small>Arena 6</small><b>Builder's Workshop</b></li>
+        <li><img src="/assets/img/arenas/8.webp" width="360" height="360" loading="lazy" alt="Royal Arena"><small>Arena 7</small><b>Royal Arena</b></li>
+        <li><img src="/assets/img/arenas/9.webp" width="360" height="360" loading="lazy" alt="Frozen Peak"><small>Arena 8</small><b>Frozen Peak</b></li>
+        <li><img src="/assets/img/arenas/10.webp" width="360" height="360" loading="lazy" alt="Legendary Arena"><small>Legendary</small><b>Legendary Arena</b></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="chests" class="alt">
+    <div class="wrap">
+      <h2>Win chests, unlock cards</h2>
+      <p class="sub">Every victory earns a chest packed with gold and cards. Luck into a Giant, Magical or Legendary Chest!</p>
+      <ul class="chests">
+        <li><img src="/assets/img/chests/wooden.webp" width="220" height="200" loading="lazy" alt="Wooden Chest"><span>Wooden</span></li>
+        <li><img src="/assets/img/chests/silver.webp" width="220" height="200" loading="lazy" alt="Silver Chest"><span>Silver</span></li>
+        <li><img src="/assets/img/chests/golden.webp" width="220" height="200" loading="lazy" alt="Golden Chest"><span>Golden</span></li>
+        <li><img src="/assets/img/chests/giant.webp" width="220" height="200" loading="lazy" alt="Giant Chest"><span>Giant</span></li>
+        <li><img src="/assets/img/chests/magical.webp" width="220" height="200" loading="lazy" alt="Magical Chest"><span>Magical</span></li>
+        <li><img src="/assets/img/chests/legendary.webp" width="220" height="200" loading="lazy" alt="Legendary Chest"><span>Legendary</span></li>
+      </ul>
+    </div>
+  </section>
+
   <section id="how">
     <div class="wrap">
       <h2>How to play</h2>
       <p class="sub">Three steps and you're in the arena.</p>
       <div class="grid steps">
-        <div class="panel"><h3>Create an account</h3><p><a href="/signup/">Sign up</a> with a username and password. It's free.</p></div>
-        <div class="panel"><h3>Press Play</h3><p>The game downloads once, is cached for next time, and starts in the tab.</p></div>
-        <div class="panel"><h3>Battle</h3><p>Tap Battle, drop your cards and take down the enemy towers to win trophies.</p></div>
+        <div class="panel step"><img src="/assets/img/icons/friends.webp" width="64" height="64" alt=""><h3>Create an account</h3><p><a href="/signup/">Sign up</a> with a username and password. It's free.</p></div>
+        <div class="panel step"><img src="/assets/img/icons/battle.webp" width="64" height="64" alt=""><h3>Press Battle</h3><p>The game downloads once, is cached for next time, and you're matched with a real opponent.</p></div>
+        <div class="panel step"><img src="/assets/img/icons/red.webp" width="64" height="48" alt=""><h3>Take their crowns</h3><p>Drop your cards, knock down the enemy towers and win trophies and chests.</p></div>
       </div>
     </div>
   </section>
 
-  <section id="faq">
+  <section id="faq" class="alt">
     <div class="wrap">
       <h2 style="margin-bottom:32px">FAQ</h2>
       <div class="faq">
@@ -110,6 +186,7 @@
 
   <section class="band"><div class="band-bg" aria-hidden="true"></div>
     <div class="wrap">
+      <img class="band-crowns" src="/assets/img/icons/blue.webp" width="80" height="60" alt=""><img class="band-crowns" src="/assets/img/icons/red.webp" width="80" height="60" alt="">
       <h2>Ready to battle?</h2>
       <p>Jump straight into the arena. It's free.</p>
       <a class="btn gold xl" href="/play/">Play now</a>
