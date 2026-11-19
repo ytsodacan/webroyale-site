@@ -553,7 +553,7 @@
         data.set(f.name, ab); doneFiles++; progress();
       };
       const queue = todo.slice(); await Promise.all(Array.from({ length: 4 }, async () => { for (let f; (f = queue.shift());) await fetchOne(f); }));
-      say('Unpacking…');
+      say('Unpacking…', 100);
       const get = async (f) => data.get(f.name) || (await cache.match(url(f))).arrayBuffer();
       window.__blobs = {};
       for (const f of man.files) if (f.kind === 'wasm' || f.kind === 'data') {
@@ -562,7 +562,7 @@
       const out = new Uint8Array(man.assetBytes); let at = 0;
       for (const f of man.files.filter((x) => x.kind === 'assets')) { const u = new Uint8Array(await gunzip(await get(f))); out.set(u, at); at += u.length; data.delete(f.name); }
       window.__assets = out; data.clear();
-      say('Loading…');
+      say('Loading…', 100);
       // Admin-set game settings: free chat on/off, and custom emote texts (a patched texts.csv written over the asset).
       try {
         const cr = await fetch(bridgeHttp() + '/config', { cache: 'no-store' });
