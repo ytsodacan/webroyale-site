@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Play Clash Royale in Browser – Free Online Game | WebRoyale</title>
+<meta name="description" content="Play the original 2016 Clash Royale (v1.9.2) online free in your web browser. No download, no install: real-time PvP battles, classic cards and arenas, on desktop and mobile.">
+<meta name="keywords" content="clash royale web, clash royale browser, play clash royale online, og clash royale, old clash royale, clash royale 2016, clash royale private server, clash royale unblocked, webroyale">
+<link rel="canonical" href="https://webroyale.dev/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0a1628">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WebRoyale">
+<meta property="og:url" content="https://webroyale.dev/">
+<meta property="og:title" content="WebRoyale – OG Clash Royale in Your Web Browser">
+<meta property="og:description" content="The original 2016 Clash Royale, free in your browser. No download. Real PvP battles on desktop and mobile.">
+<meta property="og:image" content="https://webroyale.dev/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WebRoyale – OG Clash Royale in Your Web Browser">
+<meta name="twitter:description" content="The original 2016 Clash Royale, free in your browser. No download.">
+<meta name="twitter:image" content="https://webroyale.dev/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"WebSite","@id":"https://webroyale.dev/#site","url":"https://webroyale.dev/","name":"WebRoyale","alternateName":["Web Royale","Clash Royale Web"],"inLanguage":"en"},
+ {"@type":"VideoGame","name":"WebRoyale","url":"https://webroyale.dev/","description":"The original 2016 Clash Royale (version 1.9.2) running in the web browser, with real-time PvP battles.","genre":["Strategy","Real-time strategy","Card game"],"gamePlatform":["Web browser","Desktop","Mobile"],"applicationCategory":"Game","operatingSystem":"Any (Chrome, Edge, Firefox)","playMode":"MultiPlayer","image":"https://webroyale.dev/og.jpg","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
+ {"@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"Is WebRoyale free?","acceptedAnswer":{"@type":"Answer","text":"Yes. WebRoyale is completely free to play. You only need a free account."}},
+  {"@type":"Question","name":"Do I need to download anything?","acceptedAnswer":{"@type":"Answer","text":"No. The game runs right in your web browser. The game files download once on your first visit and are cached after that."}},
+  {"@type":"Question","name":"Which version of Clash Royale is it?","acceptedAnswer":{"@type":"Answer","text":"Version 1.9.2 from 2016: the classic cards, arenas and look of early Clash Royale."}},
+  {"@type":"Question","name":"Does it work on my phone?","acceptedAnswer":{"@type":"Answer","text":"Yes. WebRoyale works in modern browsers on desktop and mobile. Chrome, Edge and Firefox work best."}},
+  {"@type":"Question","name":"Who will I battle against?","acceptedAnswer":{"@type":"Answer","text":"Real players in real time. If nobody else is queued after a minute, you get a match against a training bot so you are never stuck waiting."}}
+ ]}
+]}
+</script>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="WebRoyale home"><img src="/assets/img/icons/blue.webp" width="40" height="30" alt="">WebRoyale</a>
+    <nav class="menu" aria-label="Sections">
+      <a href="#cards"><img src="/assets/img/icons/cards.webp" width="26" height="26" alt="">Cards</a>
+      <a href="#arenas"><img src="/assets/img/icons/battle.webp" width="26" height="26" alt="">Arenas</a>
+      <a href="#chests"><img src="/assets/img/icons/shop.webp" width="26" height="26" alt="">Chests</a>
+      <a href="#faq"><img src="/assets/img/icons/friends.webp" width="26" height="26" alt="">FAQ</a>
+    </nav>
+    <span class="spacer"></span>
+    <nav class="links" id="navAuth" aria-label="Account">
+      <a class="btn sm ghost" href="/login/">Log in</a>
+      <a class="btn sm gold" href="/signup/">Sign up</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-bg">
+      <img class="sharp" src="/assets/img/hero.webp" srcset="/assets/img/hero-1280.webp 1280w, /assets/img/hero.webp 2560w" sizes="100vw" width="2560" height="1440" fetchpriority="high" alt="Clash Royale characters charging into battle: the Barbarian, Goblin, Giant, Prince and Wizard">
+      <img class="blur" src="/assets/img/hero-1280.webp" width="1280" height="720" alt="" aria-hidden="true">
+    </div>
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow"><img src="/assets/img/icons/blue.webp" width="28" height="21" alt=""> Version 1.9.2 &middot; 2016</p>
+        <h1>Play OG Clash Royale online<span>in Your Web Browser</span></h1>
+        <p class="lead">The original 2016 Clash Royale, free and right in your online browser. No download, no emulator, no install.</p>
+        <div class="cta">
+          <a class="btn gold xl" href="/play/">Play now</a>
+          <a class="btn blue xl ghostish" href="#cards">Learn more</a>
+        </div>
+        <ul class="badges">
+          <li><img src="/assets/img/icons/battle.webp" width="24" height="24" alt="">Real-time PvP</li>
+          <li><img src="/assets/img/icons/star.webp" width="24" height="24" alt="">100% free</li>
+          <li><img src="/assets/img/icons/friends.webp" width="24" height="24" alt="">Desktop &amp; mobile</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="strip" aria-label="Highlights">
+    <div class="wrap strip-grid">
+      <div><img src="/assets/img/icons/battle.webp" width="56" height="56" alt=""><b>1v1 battles</b><span>Live against real players</span></div>
+      <div><img src="/assets/img/icons/cards.webp" width="56" height="56" alt=""><b>Classic cards</b><span>The original 2016 set</span></div>
+      <div><img src="/assets/img/arenas/1.webp" width="56" height="56" alt=""><b>Classic arenas</b><span>Training Camp to Legendary</span></div>
+      <div><img src="/assets/img/chests/golden.webp" width="56" height="56" alt=""><b>Chests</b><span>Wooden to Legendary</span></div>
+    </div>
+  </section>
+
+  <section id="cards">
+    <div class="wrap">
+      <h2>Collect the classics</h2>
+      <p class="sub">Build your deck from the cards that started it all, before years of updates changed the game.</p>
+      <ul class="cardrow">
+        <li><img src="/assets/img/cards/giant.webp" width="220" height="296" loading="lazy" alt="Giant card"><span>Giant</span></li>
+        <li><img src="/assets/img/cards/musketeer.webp" width="220" height="296" loading="lazy" alt="Musketeer card"><span>Musketeer</span></li>
+        <li><img src="/assets/img/cards/prince.webp" width="220" height="296" loading="lazy" alt="Prince card"><span>Prince</span></li>
+        <li><img src="/assets/img/cards/babydragon.webp" width="220" height="296" loading="lazy" alt="Baby Dragon card"><span>Baby Dragon</span></li>
+        <li><img src="/assets/img/cards/hogrider.webp" width="220" height="296" loading="lazy" alt="Hog Rider card"><span>Hog Rider</span></li>
+        <li><img src="/assets/img/cards/pekka.webp" width="220" height="296" loading="lazy" alt="P.E.K.K.A card"><span>P.E.K.K.A</span></li>
+        <li><img src="/assets/img/cards/wizard.webp" width="220" height="296" loading="lazy" alt="Wizard card"><span>Wizard</span></li>
+        <li><img src="/assets/img/cards/valkyrie.webp" width="220" height="296" loading="lazy" alt="Valkyrie card"><span>Valkyrie</span></li>
+        <li><img src="/assets/img/cards/balloon.webp" width="220" height="296" loading="lazy" alt="Balloon card"><span>Balloon</span></li>
+        <li><img src="/assets/img/cards/witch.webp" width="220" height="296" loading="lazy" alt="Witch card"><span>Witch</span></li>
+        <li><img src="/assets/img/cards/princess.webp" width="220" height="296" loading="lazy" alt="Princess card"><span>Princess</span></li>
+        <li><img src="/assets/img/cards/lavahound.webp" width="220" height="296" loading="lazy" alt="Lava Hound card"><span>Lava Hound</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="features" class="alt">
+    <div class="wrap">
+      <h2>The Clash Royale you remember</h2>
+      <p class="sub">Version 1.9.2, the way it was in 2016.</p>
+      <div class="grid">
+        <article class="panel media"><img src="/assets/img/card-prince.webp" width="800" height="500" loading="lazy" alt="The Prince charging on horseback"><div><h3>Classic 2016 gameplay</h3><p>The original cards, arenas and battle feel, before years of updates changed it.</p></div></article>
+        <article class="panel media"><img src="/assets/img/card-loading.webp" width="800" height="500" loading="lazy" alt="The original Clash Royale loading screen"><div><h3>Runs in your browser</h3><p>No app store, no APK, no emulator. It loads in a tab on your computer, Chromebook or phone.</p></div></article>
+        <article class="panel media"><img src="/assets/img/card-kings.webp" width="800" height="500" loading="lazy" alt="Blue Kings facing off against Red Kings"><div><h3>Real PvP battles</h3><p>Battle real players live. If nobody else is queued after a minute, a training bot steps in.</p></div></article>
+        <article class="panel media"><img src="/assets/img/card-king.webp" width="800" height="500" loading="lazy" alt="The Blue King raising a mug"><div><h3>One free account</h3><p>Sign up once and your trophies and cards are saved to your account on every device.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="arenas">
+    <div class="wrap">
+      <h2>Climb the arenas</h2>
+      <p class="sub">Win trophies to unlock new arenas, from Training Camp all the way to the Legendary Arena.</p>
+      <ol class="arenas">
+        <li><img src="/assets/img/arenas/1.webp" width="360" height="360" loading="lazy" alt="Training Camp"><small>Training</small><b>Training Camp</b></li>
+        <li><img src="/assets/img/arenas/2.webp" width="360" height="360" loading="lazy" alt="Goblin Stadium"><small>Arena 1</small><b>Goblin Stadium</b></li>
+        <li><img src="/assets/img/arenas/3.webp" width="360" height="360" loading="lazy" alt="Bone Pit"><small>Arena 2</small><b>Bone Pit</b></li>
+        <li><img src="/assets/img/arenas/4.webp" width="360" height="360" loading="lazy" alt="Barbarian Bowl"><small>Arena 3</small><b>Barbarian Bowl</b></li>
+        <li><img src="/assets/img/arenas/5.webp" width="360" height="360" loading="lazy" alt="P.E.K.K.A's Playhouse"><small>Arena 4</small><b>P.E.K.K.A's Playhouse</b></li>
+        <li><img src="/assets/img/arenas/6.webp" width="360" height="360" loading="lazy" alt="Spell Valley"><small>Arena 5</small><b>Spell Valley</b></li>
+        <li><img src="/assets/img/arenas/7.webp" width="360" height="360" loading="lazy" alt="Builder's Workshop"><small>Arena 6</small><b>Builder's Workshop</b></li>
+        <li><img src="/assets/img/arenas/8.webp" width="360" height="360" loading="lazy" alt="Royal Arena"><small>Arena 7</small><b>Royal Arena</b></li>
+        <li><img src="/assets/img/arenas/9.webp" width="360" height="360" loading="lazy" alt="Frozen Peak"><small>Arena 8</small><b>Frozen Peak</b></li>
+        <li><img src="/assets/img/arenas/10.webp" width="360" height="360" loading="lazy" alt="Legendary Arena"><small>Legendary</small><b>Legendary Arena</b></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="chests" class="alt">
+    <div class="wrap">
+      <h2>Win chests, unlock cards</h2>
+      <p class="sub">Every victory earns a chest packed with gold and cards. Luck into a Giant, Magical or Legendary Chest!</p>
+      <ul class="chests">
+        <li><img src="/assets/img/chests/wooden.webp" width="220" height="200" loading="lazy" alt="Wooden Chest"><span>Wooden</span></li>
+        <li><img src="/assets/img/chests/silver.webp" width="220" height="200" loading="lazy" alt="Silver Chest"><span>Silver</span></li>
+        <li><img src="/assets/img/chests/golden.webp" width="220" height="200" loading="lazy" alt="Golden Chest"><span>Golden</span></li>
+        <li><img src="/assets/img/chests/giant.webp" width="220" height="200" loading="lazy" alt="Giant Chest"><span>Giant</span></li>
+        <li><img src="/assets/img/chests/magical.webp" width="220" height="200" loading="lazy" alt="Magical Chest"><span>Magical</span></li>
+        <li><img src="/assets/img/chests/legendary.webp" width="220" height="200" loading="lazy" alt="Legendary Chest"><span>Legendary</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How to play</h2>
+      <p class="sub">Three steps and you're in the arena.</p>
+      <div class="grid steps">
+        <div class="panel step"><img src="/assets/img/icons/friends.webp" width="64" height="64" alt=""><h3>Create an account</h3><p><a href="/signup/">Sign up</a> with a username and password. It's free.</p></div>
+        <div class="panel step"><img src="/assets/img/icons/battle.webp" width="64" height="64" alt=""><h3>Press Battle</h3><p>The game downloads once, is cached for next time, and you're matched with a real opponent.</p></div>
+        <div class="panel step"><img src="/assets/img/icons/red.webp" width="64" height="48" alt=""><h3>Take their crowns</h3><p>Drop your cards, knock down the enemy towers and win trophies and chests.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="alt">
+    <div class="wrap">
+      <h2 style="margin-bottom:32px">FAQ</h2>
+      <div class="faq">
+        <details><summary>Is WebRoyale free?</summary><p>Yes. WebRoyale is completely free to play. You only need a free account.</p></details>
+        <details><summary>Do I need to download anything?</summary><p>No. The game runs right in your web browser. The game files download once on your first visit and are cached after that.</p></details>
+        <details><summary>Which version of Clash Royale is it?</summary><p>Version 1.9.2 from 2016: the classic cards, arenas and look of early Clash Royale.</p></details>
+        <details><summary>Does it work on my phone?</summary><p>Yes. WebRoyale works in modern browsers on desktop and mobile. Chrome, Edge and Firefox work best.</p></details>
+        <details><summary>Who will I battle against?</summary><p>Real players in real time. If nobody else is queued after a minute, you get a match against a training bot so you are never stuck waiting.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band"><div class="band-bg" aria-hidden="true"></div>
+    <div class="wrap">
+      <img class="band-crowns" src="/assets/img/icons/blue.webp" width="80" height="60" alt=""><img class="band-crowns" src="/assets/img/icons/red.webp" width="80" height="60" alt="">
+      <h2>Ready to battle?</h2>
+      <p>Jump straight into the arena. It's free.</p>
+      <a class="btn gold xl" href="/play/">Play now</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav aria-label="Footer"><a href="/play/">Play</a><a href="/login/">Log in</a><a href="/signup/">Sign up</a><a href="/account/">My Account</a><a href="#faq">FAQ</a></nav>
+    <p>WebRoyale is a fan project. This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell, and Supercell is not responsible for it.</p>
+    <p>Clash Royale is a trademark of Supercell Oy.</p>
+  </div>
+</footer>
+<script src="/config.js"></script>
+<script src="/assets/site.js"></script>
+</body>
+</html>
