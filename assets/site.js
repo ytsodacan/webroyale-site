@@ -24,19 +24,3 @@
       '<a class="btn sm gold" href="/account/">My Account</a>';
   });
 })();
-(() => {
-  // Ad popunder: one smartlink tab per cooldown, never while the player is in the game (clicks on the game canvas are ignored).
-  const ADS_KEY = "ads:enableAds";           // "no" in localStorage turns the ads off
-  const LAST_OPEN_KEY = "ads:lastAdOpenAt";  // survives reloads, so the cooldown holds
-  const COOLDOWN_MS = 2 * 60 * 1000;         // minutes between ads
-  const SMARTLINK = "https://araplhn.org/4/352ef0e47b5ca081a7990d6694daf87c";
-  document.addEventListener("click", (e) => {
-    if ((localStorage.getItem(ADS_KEY) || "yes") !== "yes") return;
-    if (e.target && e.target.closest && e.target.closest("canvas")) return;   // in the game: no ad
-    const now = Date.now();
-    if (now - Number(localStorage.getItem(LAST_OPEN_KEY) || 0) < COOLDOWN_MS) return;
-    localStorage.setItem(LAST_OPEN_KEY, String(now));
-    window.open(SMARTLINK, "_blank")?.blur();
-    window.focus();
-  });
-})();
